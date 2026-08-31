@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>کتابخانه پرامپت | محمد اسماعیل اکرمی</title>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         :root {
@@ -20,12 +21,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif; }
-        <script>
-  const SUPABASE_URL = 'https://jquqnzjcmpypadlfilfz.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdXFuempjbXB5cGFkaWZpZnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxOTEyMDEsImV4cCI6MjEwMzc2NzIwMX0.9uiEUgJtoc98xbpUw6JgTRlfhRtFQE0ixZuz0Xx931s';
-
-  window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
+        
         body { 
             background-color: var(--bg-main); 
             color: var(--text-dark); 
@@ -116,8 +112,7 @@
         .nav-item.active { background: var(--primary-light); color: var(--primary); }
         .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
 
-        .auth-btn { 
-            background: var(--primary); 
+        .auth-btn {background: var(--primary); 
             color: #fff; 
             border: none; 
             padding: 0.8rem 1rem; 
@@ -227,8 +222,7 @@
         .card.selected { border: 2px solid var(--primary); background: var(--primary-light); }
         .card img { width: 100%; height: 160px; object-fit: cover; background: #f1f5f9; }
         .card-content { padding: 1rem; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
-        .card-tag { font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }.card-tag { font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; }
         .fav-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #cbd5e1; transition: color 0.2s; }
         .fav-btn.active { color: #ef4444; }
         .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -309,9 +303,7 @@
         .btn-submit { background: var(--primary); color: #fff; border: none; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; transition: background 0.2s; }
         .btn-submit:hover { background: var(--primary-hover); }
         .btn-delete { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-delete:hover { background: #fef2f2; }
-
-        .close-btn { position: absolute; left: 1rem; top: 1rem; color: var(--text-muted); cursor: pointer; background: #f1f5f9; border: none; font-size: 1.2rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .btn-delete:hover { background: #fef2f2; }.close-btn { position: absolute; left: 1rem; top: 1rem; color: var(--text-muted); cursor: pointer; background: #f1f5f9; border: none; font-size: 1.2rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 768px) {
             main { padding: 1.5rem; margin-left: 0 !important; }
@@ -348,7 +340,7 @@
                 <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> خانه
             </li>
             <li class="nav-item" onclick="setCategory('تصویر', this)">
-                <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg> داشبورد
+                <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg> تصویر
             </li>
             <li class="nav-item" onclick="setCategory('علاقه‌مندی‌ها', this)">
                 <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> مجموعه‌های من
@@ -381,8 +373,7 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal('loginModal')">✕</button>
-            <h3 style="margin-bottom:0.5rem; font-size:1.1rem; color: var(--text-dark);">ورود یا ثبت‌نام در سایت</h3>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem;">لطفاً برای دسترسی کامل ایمیل خود را وارد کنید.</p>
+            <h3 style="margin-bottom:0.5rem; font-size:1.1rem; color: var(--text-dark);">ورود یا ثبت‌نام در سایت</h3><p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem;">لطفاً برای دسترسی کامل ایمیل خود را وارد کنید.</p>
             
             <div id="stepEmail">
                 <div class="form-group">
@@ -439,7 +430,7 @@
                     <label>تصویر پیش‌نمایش</label>
                     <input type="file" id="imageInput" accept="image/*" required>
                 </div>
-                <button type="submit" class="btn-submit">ذخیره پرامپت</button>
+                <button type="submit" class="btn-submit" id="saveBtn">ذخیره پرامپت</button>
             </form>
         </div>
     </div>
@@ -458,10 +449,8 @@
             <div class="form-group">
                 <label>متن پرامپت</label>
                 <textarea id="detailPromptInput" rows="4"></textarea>
-            </div>
-
-            <div class="modal-actions">
-                <button class="btn-submit" onclick="savePromptChanges()">ذخیره تغییرات</button>
+            </div><div class="modal-actions">
+                <button class="btn-submit" id="updateBtn" onclick="savePromptChanges()">ذخیره تغییرات</button>
                 <button class="btn-delete" id="deleteBtn" style="display:none;" onclick="deleteCurrentPrompt()">حذف پرامپت</button>
             </div>
 
@@ -474,249 +463,6 @@
     </div>
 
     <script>
-        var ADMIN_EMAIL = "mohamadismailakrami@gmail.com";
-
-        var currentUser = JSON.parse(localStorage.getItem('current_user')) || null;
-        var userFavorites = JSON.parse(localStorage.getItem('user_favorites')) || [];
-
-        var generatedOTP = null;
-        var pendingEmail = null;
-
-        var defaultPrompts = [
-            { id: 1, title: "Neon Dreamscape", category: "تصویر", prompt: "A wide, cinematic shot of a rain-slicked cyberpunk street at night, illuminated by electric blue and pink neon signs.", image: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=500&auto=format&fit=crop" },
-            { id: 2, title: "Cyberpunk Alley", category: "تصویر", prompt: "A wide, cinematic shot of a rain-slicked cyberpunk street at night, illuminated by electric neon.", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop" },
-            { id: 3, title: "Portrait of Serenity", category: "تصویر", prompt: "A realistic studio portrait with natural light and sharp detail.", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop" }
-        ];
-
-        var prompts = JSON.parse(localStorage.getItem('my_prompts')) || defaultPrompts;
-        var currentPromptId = null;
-        var selectedCategory = 'همه';
-
-        function toggleSidebar() {
-            var sidebar = document.getElementById('sidebar');
-            var body = document.body;
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('mobile-open');
-            } else {
-                sidebar.classList.toggle('collapsed');
-                body.classList.toggle('menu-collapsed');
-            }
-        }
-
-        function updateUIAuth() {
-            var userInfo = document.getElementById('userInfo');
-            var authBtn = document.getElementById('authBtn');
-            var uploadBtn = document.getElementById('uploadBtn');
-            var welcomeText = document.getElementById('welcomeText');
-
-            if (currentUser) {
-                var isUserAdmin = (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-                userInfo.innerText = currentUser.email;
-                welcomeText.innerText = isUserAdmin ? "خوش آمدید، مدیر گرامی!" : "سلام، خوش آمدید!";
-                authBtn.innerText = "خروج از حساب";
-                authBtn.classList.add('logout');
-                
-                if (isUserAdmin) {
-                    uploadBtn.classList.add('visible');
-                } else {
-                    uploadBtn.classList.remove('visible');
-                }
-            } else {
-                userInfo.innerText = "مهمان (وارد نشده)";
-                welcomeText.innerText = "سلام، خوش آمدید!";
-                authBtn.innerText = "ورود / ثبت‌نام";
-                authBtn.classList.remove('logout');
-                uploadBtn.classList.remove('visible');
-            }
-        }
-
-        function checkFirstVisitAuth() {
-            if (!currentUser) {
-                document.getElementById('stepEmail').style.display = 'block';
-                document.getElementById('stepOTP').style.display = 'none';
-                openModal('loginModal');
-            }
-        }
-
-        function handleAuthClick() {
-            if (currentUser) {
-                currentUser = null;
-                localStorage.removeItem('current_user');
-                alert("از حساب کاربری خارج شدید.");
-                updateUIAuth();
-                renderPrompts();
-            } else {
-                document.getElementById('stepEmail').style.display = 'block';
-                document.getElementById('stepOTP').style.display = 'none';
-                document.getElementById('userEmailInput').value = '';
-                document.getElementById('otpCodeInput').value = '';
-                openModal('loginModal');
-            }
-        }
-
-        function sendOTPEmail() {
-            var inputEmail = document.getElementById('userEmailInput').value.trim();
-            if (!inputEmail || !inputEmail.includes('@')) {
-                alert("لطفا یک ایمیل معتبر وارد کنید!");
-                return;
-            }
-
-            pendingEmail = inputEmail;
-            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
-            alert("کد تایید ورود تست: " + generatedOTP);
-
-            document.getElementById('stepEmail').style.display = 'none';
-            document.getElementById('stepOTP').style.display = 'block';
-        }
-
-        function verifyOTP() {
-            var userCode = document.getElementById('otpCodeInput').value.trim();
-            if (userCode === generatedOTP) {
-                currentUser = { email: pendingEmail };
-                localStorage.setItem('current_user', JSON.stringify(currentUser));
-                closeModal('loginModal');
-                updateUIAuth();
-                renderPrompts();
-            } else {
-                alert("کد تایید اشتباه است!");
-            }
-        }
-
-        function toggleFavorite(id, event) {
-            event.stopPropagation();
-            if (!currentUser) {
-                alert("لطفاً ابتدا وارد حساب کاربری خود شوید.");
-                openModal('loginModal');
-                return;
-            }
-
-            var index = userFavorites.indexOf(id);
-            if (index > -1) {
-                userFavorites.splice(index, 1);
-            } else {
-                userFavorites.push(id);
-            }
-
-            localStorage.setItem('user_favorites', JSON.stringify(userFavorites));
-            renderPrompts();
-        }
-
-        function setCategory(cat, el) {
-            selectedCategory = cat;
-            var items = document.querySelectorAll('.nav-item');
-            items.forEach(function(c) { c.classList.remove('active'); });
-            if (el) el.classList.add('active');
-            renderPrompts();
-        }
-
-        function renderPrompts() {
-            var gallery = document.getElementById('gallery');
-            var query = document.getElementById('searchInput').value.toLowerCase();
-            gallery.innerHTML = '';
-
-            var filtered = prompts.filter(function(p) {
-                var matchesQuery = p.title.toLowerCase().includes(query) || p.prompt.toLowerCase().includes(query);
-                var matchesCategory = true;
-                if (selectedCategory === 'علاقه‌مندی‌ها') {
-                    matchesCategory = userFavorites.includes(p.id);
-                } else if (selectedCategory !== 'همه') {
-                    matchesCategory = (p.category === selectedCategory);
-                }
-                return matchesQuery && matchesCategory;
-            });
-
-            filtered.forEach(function(p) {
-                var card = document.createElement('div');
-                card.className = 'card' + (currentPromptId === p.id ? ' selected' : '');
-                card.onclick = function() { openDetail(p.id); };
-                
-                var isFav = userFavorites.includes(p.id);
-                var favClass = isFav ? 'fav-btn active' : 'fav-btn';
-                var favIcon = isFav ? '❤️' : '🤍';
-                
-                card.innerHTML = '<img src="' + p.image + '" alt="' + p.title + '">' +
-                    '<div class="card-content">' +
-                        '<div class="card-header">' +
-                            '<span class="card-tag">' + (p.category || 'Midjourney') + '</span>' +
-                            '<button class="' + favClass + '" onclick="toggleFavorite(' + p.id + ', event)">' + favIcon + '</button>' +
-                        '</div>' +
-                        '<div class="card-title">' + p.title + '</div>' +
-                        '<div class="card-prompt">' + p.prompt + '</div>' +
-                    '</div>';
-                gallery.appendChild(card);
-            });
-        }
-
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        function savePrompt(e) {
-            e.preventDefault();
-            var title = document.getElementById('titleInput').value;
-            var category = document.getElementById('categoryInput').value;
-            var promptText = document.getElementById('promptInput').value;
-            var file = document.getElementById('imageInput').files[0];
-
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(evt) {
-                    var newPrompt = {
-                        id: Date.now(),
-                        title: title,
-                        category: category,
-                        prompt: promptText,
-                        image: evt.target.result
-                    };
-                    prompts.unshift(newPrompt);
-                    localStorage.setItem('my_prompts', JSON.stringify(prompts));
-                    renderPrompts();
-                    closeModal('uploadModal');
-                    e.target.reset();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function openDetail(id) {
-            currentPromptId = id;
-            var p = prompts.find(function(item) { return item.id === id; });
-            if (!p) return;
-
-            document.getElementById('detailTitleInput').value = p.title;
-            document.getElementById('detailPromptInput').value = p.prompt;
-            document.getElementById('detailCategory').innerText = p.category || 'Midjourney';
-            document.getElementById('detailImg').src = p.image;
-
-            var isUserAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-            document.getElementById('deleteBtn').style.display = isUserAdmin ? 'block' : 'none';
-
-            renderPrompts();
-            openModal('detailModal');
-        }
-
-        function savePromptChanges() {
-            var p = prompts.find(function(item) { return item.id === currentPromptId; });
-            if (p) {
-                p.title = document.getElementById('detailTitleInput').value;
-                p.prompt = document.getElementById('detailPromptInput').value;
-                localStorage.setItem('my_prompts', JSON.stringify(prompts));
-                renderPrompts();
-                closeModal('detailModal');
-            }
-        }
-
-        function deleteCurrentPrompt() {
-            if (confirm("آیا از حذف این پرامپت اطمینان دارید؟")) {
-                prompts = prompts.filter(function(p) { return p.id !== currentPromptId; });
-                localStorage.setItem('my_prompts', JSON.stringify(prompts));
-                renderPrompts();
-                closeModal('detailModal');
-            }
-        }
-
-        updateUIAuth();
-        renderPrompts();
-        setTimeout(checkFirstVisitAuth, 500);
-    </script>
-</body>
-</html>
+        // --- Supabase Config ---
+        const SUPABASE_URL = 'https://jquqnzjcmpypadlfilfz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6
