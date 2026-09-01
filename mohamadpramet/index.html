@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Prompt Hub</title>
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -19,21 +18,9 @@
             --sidebar-width: 250px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); display: flex; min-height: 100vh; }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Styles */
         aside {
             width: var(--sidebar-width);
             background: #ffffff;
@@ -45,22 +32,8 @@
             flex-shrink: 0;
         }
 
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+        .logo { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); padding: 0 12px; }
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 
         .nav-item {
             display: flex;
@@ -69,338 +42,59 @@
             padding: 12px 14px;
             border-radius: 10px;
             color: var(--text-muted);
-            text-decoration: none;
             font-size: 0.95rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .nav-item:hover {
-            background: #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .nav-item.active {
-            background: var(--primary-orange-light);
-            color: var(--primary-orange);
-            font-weight: 600;
-        }
+        .nav-item:hover { background: #f1f5f9; color: var(--text-dark); }
+        .nav-item.active { background: var(--primary-orange-light); color: var(--primary-orange); font-weight: 600; }
 
         .badge-count {
-            background: #ef4444;
-            color: white;
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-right: auto;
+            background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; margin-right: auto;
         }
 
-        /* Main Area */
-        main {
-            flex-grow: 1;
-            padding: 32px 40px;
-            overflow-y: auto;
-        }
+        main { flex-grow: 1; padding: 32px 40px; overflow-y: auto; }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header-titles h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
+        .header-titles p { color: var(--text-muted); font-size: 0.95rem; }
 
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
+        .top-actions { display: flex; align-items: center; gap: 12px; }
+        .search-input { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color); outline: none; width: 240px; }
 
-        .header-titles h1 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .header-titles p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .search-input {
-            padding: 10px 16px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            outline: none;
-            width: 240px;
-            font-size: 0.9rem;
-            transition: border-color 0.2s;
-        }
-
-        .search-input:focus {
-            border-color: var(--primary-orange);
-        }
-
-        /* Buttons Styles */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s;
         }
 
-        .btn-orange {
-            background: var(--primary-orange);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
-        }
+        .btn-orange { background: var(--primary-orange); color: #ffffff; }
+        .btn-orange:hover { background: var(--primary-orange-hover); }
+        .btn-success { background: #10b981; color: #ffffff; }
+        .btn-secondary { background: #f1f5f9; color: var(--text-dark); border: 1px solid var(--border-color); }
+        .btn-danger { background: #ef4444; color: #ffffff; }
 
-        .btn-orange:hover {
-            background: var(--primary-orange-hover);
-            transform: translateY(-1px);
-        }
+        .prompt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
+        .prompt-card { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border-color); padding: 14px; display: flex; flex-direction: column; }
 
-        .btn-orange:disabled {
-            background: #cbd5e1;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
+        .card-img-wrapper { position: relative; width: 100%; height: 160px; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #f1f5f9; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn-success {
-            background: #10b981;
-            color: #ffffff;
-        }
+        .quick-copy-btn { position: absolute; top: 8px; left: 8px; background: rgba(255, 255, 255, 0.9); border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
+        .category-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(15, 23, 42, 0.75); color: #fff; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; }
 
-        .btn-success:hover {
-            background: #059669;
-        }
+        .card-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+        .card-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; height: 38px; overflow: hidden; margin-bottom: 12px; }
+        .card-footer { margin-top: auto; display: flex; gap: 8px; }
 
-        .btn-secondary {
-            background: #f1f5f9;
-            color: var(--text-dark);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background: #e2e8f0;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: #ffffff;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        /* Filter Tags */
-        .filter-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: var(--primary-orange);
-            color: #ffffff;
-            border-color: var(--primary-orange);
-        }
-
-        /* Prompt Grid */
-        .prompt-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 22px;
-        }
-
-        .prompt-card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            padding: 14px;
-            position: relative;
-            transition: all 0.25s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .prompt-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
-            border-color: var(--primary-orange);
-        }
-
-        .card-img-wrapper {
-            position: relative;
-            width: 100%;
-            height: 160px;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 12px;
-            background: #f1f5f9;
-        }
-
-        .card-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .quick-copy-btn {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        }
-
-        .quick-copy-btn:hover {
-            background: var(--primary-orange);
-            color: #ffffff;
-        }
-
-        .category-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(15, 23, 42, 0.75);
-            color: #ffffff;
-            font-size: 0.7rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            backdrop-filter: blur(4px);
-        }
-
-        .card-title {
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 6px;
-            color: var(--text-dark);
-        }
-
-        .card-desc {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .card-footer {
-            margin-top: auto;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        /* Modals */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-card {
-            background: #ffffff;
-            width: 440px;
-            border-radius: 18px;
-            padding: 24px;
-            box-shadow: 0 24px 48px rgba(0,0,0,0.12);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-
-        .modal-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .modal-field label {
-            font-size: 0.825rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .modal-field input, .modal-field textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        .modal-field input:focus, .modal-field textarea:focus {
-            border-color: var(--primary-orange);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-
-        .modal-actions .btn {
-            flex: 1;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: #ffffff; width: 440px; border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 16px; max-height: 90vh; overflow-y: auto; }
+        .modal-field { display: flex; flex-direction: column; gap: 6px; }
+        .modal-field label { font-size: 0.825rem; font-weight: 600; color: var(--text-muted); }
+        .modal-field input, .modal-field textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 10px; outline: none; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Navigation -->
     <aside>
         <div class="logo">⚡ AI Prompt Hub</div>
         <ul class="nav-list">
@@ -412,7 +106,6 @@
         </ul>
     </aside>
 
-    <!-- Main Content Area -->
     <main>
         <div class="top-header">
             <div class="header-titles">
@@ -425,15 +118,6 @@
             </div>
         </div>
 
-        <!-- Filter Categories Bar -->
-        <div class="filter-bar" id="filterBar">
-            <button class="filter-btn active" data-cat="all">همه</button>
-            <button class="filter-btn" data-cat="Cyberpunk">Cyberpunk</button>
-            <button class="filter-btn" data-cat="Portrait">پرتره</button>
-            <button class="filter-btn" data-cat="3D">سه بعدی</button>
-            <button class="filter-btn" data-cat="General">عمومی</button>
-        </div>
-
         <div class="prompt-grid" id="promptGrid"></div>
     </main>
 
@@ -441,40 +125,15 @@
     <div class="modal-overlay" id="authModal">
         <div class="modal-card">
             <h3>ورود به حساب کاربری</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">برای ثبت و پیشنهاد پرامپت لطفا ایمیل خود را وارد کنید.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">جهت ثبت پرامپت ایمیل خود را وارد کنید.</p>
             <div class="modal-field">
                 <label>ایمیل</label>
-                <input type="email" id="authEmail" placeholder="ایمیل خود را وارد کنید...">
+                <input type="email" id="authEmail" placeholder="مثال: user@gmail.com">
             </div>
-            <div class="modal-actions">
-                <button class="btn btn-orange" id="submitAuthBtn">ورود</button>
-                <button class="btn btn-secondary" id="closeAuthBtn">انصراف</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-orange" id="submitAuthBtn" style="flex:1;">ورود</button>
+                <button class="btn btn-secondary" id="closeAuthBtn" style="flex:1;">انصراف</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Detail & Edit Modal -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal-card">
-            <img src="" id="detailImg" class="modal-img" alt="Preview">
-            <div class="modal-field">
-                <label>عنوان</label>
-                <input type="text" id="detailTitle" readonly>
-            </div>
-            <div class="modal-field">
-                <label>دسته‌بندی</label>
-                <input type="text" id="detailCategory" readonly>
-            </div>
-            <div class="modal-field">
-                <label>متن پرامپت</label>
-                <textarea id="detailPrompt" rows="4" readonly></textarea>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-orange" id="copyBtn">📋 کپی پرامپت</button>
-                <button class="btn btn-success" id="saveEditBtn" style="display: none;">✏️ ثبت تغییرات</button>
-                <button class="btn btn-danger" id="deleteBtn" style="display: none;">🗑 حذف</button>
-            </div>
-            <button class="btn btn-secondary" id="closeDetailBtn">بستن</button>
         </div>
     </div>
 
@@ -482,30 +141,21 @@
     <div class="modal-overlay" id="uploadModal">
         <div class="modal-card">
             <h3>ثبت پرامپت جدید</h3>
-            
             <div class="modal-field">
                 <label>عنوان *</label>
-                <input type="text" id="newTitle" placeholder="مثلاً: Neon Dreamscape">
+                <input type="text" id="newTitle" placeholder="مثلاً: پرتره سایبرپانک">
             </div>
-
             <div class="modal-field">
                 <label>دسته‌بندی</label>
                 <input type="text" id="newCategory" placeholder="مثلاً: Cyberpunk">
             </div>
-
             <div class="modal-field">
                 <label>متن پرامپت *</label>
                 <textarea id="newPrompt" rows="3" placeholder="متن پرامپت را وارد کنید..."></textarea>
             </div>
-
-            <div class="modal-field">
-                <label>انتخاب تصویر (اختیاری)</label>
-                <input type="file" id="newImageFile" accept="image/*">
-            </div>
-
-            <div class="modal-actions">
-                <button class="btn btn-orange" id="submitUploadBtn">ارسال پرامپت</button>
-                <button class="btn btn-secondary" id="closeUploadBtn">انصراف</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-orange" id="submitUploadBtn" style="flex:1;">ارسال پرامپت</button>
+                <button class="btn btn-secondary" id="closeUploadBtn" style="flex:1;">انصراف</button>
             </div>
         </div>
     </div>
@@ -516,17 +166,6 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const ADMIN_EMAIL = 'mohamadismailakrami@gmail.com';
-
-        const promptGrid = document.getElementById('promptGrid');
-        const detailModal = document.getElementById('detailModal');
-        const uploadModal = document.getElementById('uploadModal');
-        const authModal = document.getElementById('authModal');
-        const submitBtn = document.getElementById('submitUploadBtn');
-        const openUploadBtn = document.getElementById('openUploadBtn');
-        const searchInput = document.getElementById('searchInput');
-        const navPendingBtn = document.getElementById('navPendingBtn');
-        const navHomeBtn = document.getElementById('navHomeBtn');
-        const pendingBadge = document.getElementById('pendingBadge');
 
         let allPrompts = [];
         let currentTab = 'home';
@@ -539,21 +178,16 @@
         function updateAuthUI() {
             if (currentUser) {
                 document.getElementById('accountBtn').innerText = `👤 ${currentUser.split('@')[0]} (خروج)`;
-                if (isAdmin()) {
-                    navPendingBtn.style.display = 'flex';
-                } else {
-                    navPendingBtn.style.display = 'none';
-                }
+                navPendingBtn.style.display = isAdmin() ? 'flex' : 'none';
             } else {
                 document.getElementById('accountBtn').innerText = '👤 ورود / حساب';
                 navPendingBtn.style.display = 'none';
             }
         }
 
-        // Account Modal
         document.getElementById('accountBtn').onclick = () => {
             if (currentUser) {
-                if (confirm('آیا قصد خروج از حساب کاربری را دارید؟')) {
+                if (confirm('آیا می‌خواهید از حساب خارج شوید؟')) {
                     currentUser = null;
                     localStorage.removeItem('user_email');
                     currentTab = 'home';
@@ -561,18 +195,18 @@
                     fetchPrompts();
                 }
             } else {
-                authModal.style.display = 'flex';
+                document.getElementById('authModal').style.display = 'flex';
             }
         };
 
-        document.getElementById('closeAuthBtn').onclick = () => authModal.style.display = 'none';
+        document.getElementById('closeAuthBtn').onclick = () => document.getElementById('authModal').style.display = 'none';
 
         document.getElementById('submitAuthBtn').onclick = () => {
             const email = document.getElementById('authEmail').value.trim();
             if (email) {
                 currentUser = email;
                 localStorage.setItem('user_email', email);
-                authModal.style.display = 'none';
+                document.getElementById('authModal').style.display = 'none';
                 updateAuthUI();
                 fetchPrompts();
             } else {
@@ -580,64 +214,44 @@
             }
         };
 
-        // Navigation Tabs
         navHomeBtn.onclick = () => {
             currentTab = 'home';
             navHomeBtn.classList.add('active');
             navPendingBtn.classList.remove('active');
-            document.getElementById('filterBar').style.display = 'flex';
-            document.getElementById('pageHeading').innerText = 'خانه';
-            document.getElementById('pageSubHeading').innerText = 'کتابخانه پرامپت‌های عمومی';
-            renderPrompts();
+            fetchPrompts();
         };
 
         navPendingBtn.onclick = () => {
             currentTab = 'pending';
             navPendingBtn.classList.add('active');
             navHomeBtn.classList.remove('active');
-            document.getElementById('filterBar').style.display = 'none';
-            document.getElementById('pageHeading').innerText = 'درخواست‌های معلق';
-            document.getElementById('pageSubHeading').innerText = 'پرامپت‌های در انتظار تایید مدیریت';
-            renderPrompts();
+            fetchPrompts();
         };
 
-        // Fetch Prompts
         async function fetchPrompts() {
-            promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">در حال بارگذاری...</p>';
+            const promptGrid = document.getElementById('promptGrid');
+            promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">در حال بارگذاری...</p>';
+
             const { data, error } = await supabaseClient.from('prompts').select('*').order('created_at', { ascending: false });
 
-            if (error) console.error("Fetch error:", error);
+            if (error) {
+                alert('خطا در دریافت اطلاعات: ' + error.message);
+                return;
+            }
 
             allPrompts = data || [];
-            updatePendingBadge();
+            document.getElementById('pendingBadge').innerText = allPrompts.filter(p => p.is_approved === false).length;
             renderPrompts();
-        }
-
-        function updatePendingBadge() {
-            const pendingCount = allPrompts.filter(p => p.is_approved === false).length;
-            pendingBadge.innerText = pendingCount;
         }
 
         function renderPrompts() {
-            let items = [];
-            if (currentTab === 'home') {
-                items = allPrompts.filter(p => p.is_approved !== false);
-            } else {
-                items = allPrompts.filter(p => p.is_approved === false);
-            }
+            const promptGrid = document.getElementById('promptGrid');
+            let items = currentTab === 'home' 
+                ? allPrompts.filter(p => p.is_approved !== false)
+                : allPrompts.filter(p => p.is_approved === false);
 
-            const query = searchInput.value.toLowerCase();
-            if (query) {
-                items = items.filter(p => 
-                    p.title.toLowerCase().includes(query) || 
-                    p.prompt.toLowerCase().includes(query)
-                );
-            }
-
-            if (!items || items.length === 0) {
-                promptGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 40px;">
-                    ${currentTab === 'home' ? 'هیچ پرامپت تایید شده‌ای یافت نشد.' : 'هیچ درخواستی در انتظار تایید نیست.'}
-                </p>`;
+            if (!items.length) {
+                promptGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">موردی یافت نشد.</p>`;
                 return;
             }
 
@@ -646,263 +260,87 @@
                 const card = document.createElement('div');
                 card.className = 'prompt-card';
                 
-                let footerActions = `<button class="btn btn-secondary" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده ${isAdmin() ? '/ ویرایش' : 'جزئیات'}</button>`;
-
-                if (isAdmin()) {
-                    if (currentTab === 'pending') {
-                        footerActions = `
-                            <button class="btn btn-success" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="approvePrompt('${item.id}')">✔️ تایید</button>
-                            <button class="btn btn-danger" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="deletePrompt('${item.id}')">❌ رد</button>
-                        `;
-                    } else {
-                        footerActions += `<button class="btn btn-danger" style="font-size: 0.8rem; padding: 6px 12px;" onclick="deletePrompt('${item.id}')">🗑 حذف</button>`;
-                    }
+                let footerActions = '';
+                if (isAdmin() && currentTab === 'pending') {
+                    footerActions = `
+                        <button class="btn btn-success" style="flex:1;" onclick="approvePrompt('${item.id}')">✔️ تایید</button>
+                        <button class="btn btn-danger" style="flex:1;" onclick="deletePrompt('${item.id}')">❌ رد</button>
+                    `;
+                } else if (isAdmin()) {
+                    footerActions = `<button class="btn btn-danger" style="flex:1;" onclick="deletePrompt('${item.id}')">🗑 حذف</button>`;
                 }
 
                 card.innerHTML = `
                     <div class="card-img-wrapper">
-                        <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
-                        <button class="quick-copy-btn" onclick="event.stopPropagation(); copyText('${item.prompt.replace(/'/g, "\\'")}')">📋 کپی</button>
+                        <img src="${item.image || 'https://via.placeholder.com/300x180?text=AI+Prompt'}" class="card-img">
+                        <button class="quick-copy-btn" onclick="navigator.clipboard.writeText('${item.prompt.replace(/'/g, "\\'")}'); alert('کپی شد!');">📋 کپی</button>
                         <span class="category-badge">${item.category || 'General'}</span>
                     </div>
                     <div class="card-title">${item.title}</div>
                     <div class="card-desc">${item.prompt}</div>
-                    <div class="card-footer">
-                        ${footerActions}
-                    </div>
+                    <div class="card-footer">${footerActions}</div>
                 `;
                 promptGrid.appendChild(card);
             });
         }
 
-        function copyText(text) {
-            navigator.clipboard.writeText(text);
-            alert('متن پرامپت کپی شد!');
-        }
-
-        function openDetail(id) {
-            const item = allPrompts.find(p => p.id == id);
-            if (!item) return;
-
-            document.getElementById('detailImg').src = item.image || 'https://via.placeholder.com/300x180?text=No+Image';
-            
-            const titleInput = document.getElementById('detailTitle');
-            const catInput = document.getElementById('detailCategory');
-            const promptInput = document.getElementById('detailPrompt');
-
-            titleInput.value = item.title;
-            catInput.value = item.category || 'General';
-            promptInput.value = item.prompt;
-
-            const deleteBtn = document.getElementById('deleteBtn');
-            const saveEditBtn = document.getElementById('saveEditBtn');
-
-            if (isAdmin()) {
-                titleInput.removeAttribute('readonly');
-                catInput.removeAttribute('readonly');
-                promptInput.removeAttribute('readonly');
-                
-                saveEditBtn.style.display = 'inline-flex';
-                deleteBtn.style.display = 'inline-flex';
-
-                deleteBtn.onclick = () => deletePrompt(item.id);
-                saveEditBtn.onclick = () => savePromptEdit(item.id);
-            } else {
-                titleInput.setAttribute('readonly', 'true');
-                catInput.setAttribute('readonly', 'true');
-                promptInput.setAttribute('readonly', 'true');
-
-                saveEditBtn.style.display = 'none';
-                deleteBtn.style.display = 'none';
-            }
-
-            document.getElementById('copyBtn').onclick = () => copyText(promptInput.value);
-            detailModal.style.display = 'flex';
-        }
-
-        async function savePromptEdit(id) {
-            const updatedTitle = document.getElementById('detailTitle').value.trim();
-            const updatedCategory = document.getElementById('detailCategory').value.trim();
-            const updatedPrompt = document.getElementById('detailPrompt').value.trim();
-
-            if (!updatedTitle || !updatedPrompt) {
-                alert('عنوان و متن پرامپت نمی‌توانند خالی باشند.');
-                return;
-            }
-
-            const { error } = await supabaseClient
-                .from('prompts')
-                .update({ 
-                    title: updatedTitle, 
-                    category: updatedCategory, 
-                    prompt: updatedPrompt 
-                })
-                .eq('id', id);
-
-            if (error) {
-                alert('خطا در ویرایش: ' + error.message);
-            } else {
-                alert('پرامپت با موفقیت ویرایش شد!');
-                detailModal.style.display = 'none';
-                fetchPrompts();
-            }
-        }
-
         async function approvePrompt(id) {
             const { error } = await supabaseClient.from('prompts').update({ is_approved: true }).eq('id', id);
-            if (error) {
-                alert('خطا در تایید: ' + error.message);
-            } else {
-                alert('پرامپت با موفقیت تایید و منتشر شد!');
-                fetchPrompts();
-            }
+            if (error) alert(error.message);
+            else { alert('پرامپت تایید شد.'); fetchPrompts(); }
         }
 
         async function deletePrompt(id) {
-            if (confirm('آیا از حذف/رد این پرامپت اطمینان دارید؟')) {
+            if (confirm('از حذف این پرامپت اطمینان دارید؟')) {
                 const { error } = await supabaseClient.from('prompts').delete().eq('id', id);
-                if (error) {
-                    alert('خطا در حذف: ' + error.message);
-                } else {
-                    alert('پرامپت حذف شد.');
-                    detailModal.style.display = 'none';
-                    fetchPrompts();
-                }
+                if (error) alert(error.message);
+                else { alert('حذف شد.'); fetchPrompts(); }
             }
         }
 
-        // Search Filter
-        searchInput.oninput = () => renderPrompts();
-
-        // Category Filter Buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const cat = btn.getAttribute('data-cat');
-                if (cat === 'all') {
-                    renderPrompts();
-                } else {
-                    const filtered = allPrompts.filter(p => p.is_approved !== false && p.category && p.category.toLowerCase() === cat.toLowerCase());
-                    promptGrid.innerHTML = '';
-                    filtered.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'prompt-card';
-                        let footerActions = `<button class="btn btn-secondary" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده ${isAdmin() ? '/ ویرایش' : 'جزئیات'}</button>`;
-                        if (isAdmin()) {
-                            footerActions += `<button class="btn btn-danger" style="font-size: 0.8rem; padding: 6px 12px;" onclick="deletePrompt('${item.id}')">🗑 حذف</button>`;
-                        }
-                        card.innerHTML = `
-                            <div class="card-img-wrapper">
-                                <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
-                                <button class="quick-copy-btn" onclick="copyText('${item.prompt.replace(/'/g, "\\'")}')">📋 کپی</button>
-                                <span class="category-badge">${item.category || 'General'}</span>
-                            </div>
-                            <div class="card-title">${item.title}</div>
-                            <div class="card-desc">${item.prompt}</div>
-                            <div class="card-footer">${footerActions}</div>
-                        `;
-                        promptGrid.appendChild(card);
-                    });
-                }
-            };
-        });
-
-        document.getElementById('closeDetailBtn').onclick = () => detailModal.style.display = 'none';
-        
-        // Open Upload Modal Guard
-        openUploadBtn.onclick = () => {
+        document.getElementById('openUploadBtn').onclick = () => {
             if (!currentUser) {
                 alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
-                authModal.style.display = 'flex';
+                document.getElementById('authModal').style.display = 'flex';
                 return;
             }
-            uploadModal.style.display = 'flex';
+            document.getElementById('uploadModal').style.display = 'flex';
         };
-        
-        document.getElementById('closeUploadBtn').onclick = () => uploadModal.style.display = 'none';
 
-        // Submit Upload Process
-        submitBtn.onclick = async () => {
-            if (!currentUser) {
-                alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
-                uploadModal.style.display = 'none';
-                authModal.style.display = 'flex';
-                return;
-            }
+        document.getElementById('closeUploadBtn').onclick = () => document.getElementById('uploadModal').style.display = 'none';
 
+        document.getElementById('submitUploadBtn').onclick = async () => {
             const title = document.getElementById('newTitle').value.trim();
             const category = document.getElementById('newCategory').value.trim() || 'General';
             const prompt = document.getElementById('newPrompt').value.trim();
-            const fileInput = document.getElementById('newImageFile');
-            const file = fileInput.files[0];
 
             if (!title || !prompt) {
-                alert('لطفاً عنوان و متن پرامپت را وارد کنید.');
+                alert('لطفاً عنوان و متن پرامپت را تکمیل کنید.');
                 return;
             }
 
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'در حال ارسال...';
+            const userIsAdmin = isAdmin();
+            const approvalStatus = userIsAdmin ? true : false;
 
-            let imageUrl = '';
+            const { error } = await supabaseClient.from('prompts').insert([{
+                title: title,
+                category: category,
+                prompt: prompt,
+                is_approved: approvalStatus
+            }]);
 
-            try {
-                if (file) {
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                    
-                    const { error: uploadError } = await supabaseClient
-                        .storage
-                        .from('prompt-images')
-                        .upload(fileName, file);
-
-                    if (uploadError) console.warn('Warning image upload:', uploadError);
-
-                    const { data: urlData } = supabaseClient
-                        .storage
-                        .from('prompt-images')
-                        .getPublicUrl(fileName);
-
-                    if (urlData) imageUrl = urlData.publicUrl;
-                }
-
-                const userIsAdmin = isAdmin();
-                const approvalStatus = userIsAdmin ? true : false;
-
-                const { error: dbError } = await supabaseClient.from('prompts').insert([{
-                    title: title,
-                    category: category,
-                    prompt: prompt,
-                    image: imageUrl,
-                    fileName: title,
-                    isVideo: false,
-                    is_approved: approvalStatus
-                }]);
-
-                if (dbError) throw new Error('خطا در ثبت اطلاعات: ' + dbError.message);
-
+            if (error) {
+                alert('خطا در ثبت: ' + error.message);
+            } else {
                 if (userIsAdmin) {
                     alert('پرامپت با موفقیت منتشر شد!');
                 } else {
                     alert('درخواست شما به مدیر ارسال شد و بعد از تایید مدیر پرامت شما منتشر خواهد شد.');
                 }
-
-                uploadModal.style.display = 'none';
-                
+                document.getElementById('uploadModal').style.display = 'none';
                 document.getElementById('newTitle').value = '';
-                document.getElementById('newCategory').value = '';
                 document.getElementById('newPrompt').value = '';
-                fileInput.value = '';
-
                 fetchPrompts();
-
-            } catch (err) {
-                alert(err.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'ارسال پرامپت';
             }
         };
 
