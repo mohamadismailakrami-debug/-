@@ -176,6 +176,7 @@
         }
 
         function updateAuthUI() {
+            const navPendingBtn = document.getElementById('navPendingBtn');
             if (currentUser) {
                 document.getElementById('accountBtn').innerText = `👤 ${currentUser.split('@')[0]} (خروج)`;
                 navPendingBtn.style.display = isAdmin() ? 'flex' : 'none';
@@ -214,18 +215,23 @@
             }
         };
 
+        const navHomeBtn = document.getElementById('navHomeBtn');
+        const navPendingBtn = document.getElementById('navPendingBtn');
+
         navHomeBtn.onclick = () => {
             currentTab = 'home';
             navHomeBtn.classList.add('active');
             navPendingBtn.classList.remove('active');
-            fetchPrompts();
+            document.getElementById('pageHeading').innerText = 'خانه';
+            renderPrompts();
         };
 
         navPendingBtn.onclick = () => {
             currentTab = 'pending';
             navPendingBtn.classList.add('active');
             navHomeBtn.classList.remove('active');
-            fetchPrompts();
+            document.getElementById('pageHeading').innerText = 'درخواست‌های معلق';
+            renderPrompts();
         };
 
         async function fetchPrompts() {
@@ -235,7 +241,8 @@
             const { data, error } = await supabaseClient.from('prompts').select('*').order('created_at', { ascending: false });
 
             if (error) {
-                alert('خطا در دریافت اطلاعات: ' + error.message);
+                console.error("Error fetching prompts:", error);
+                promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: red;">خطا در دریافت اطلاعات</p>';
                 return;
             }
 
@@ -246,12 +253,18 @@
 
         function renderPrompts() {
             const promptGrid = document.getElementById('promptGrid');
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
             let items = currentTab === 'home' 
                 ? allPrompts.filter(p => p.is_approved !== false)
                 : allPrompts.filter(p => p.is_approved === false);
 
+            if (query) {
+                items = items.filter(p => p.title?.toLowerCase().includes(query) || p.prompt?.toLowerCase().includes(query));
+            }
+
             if (!items.length) {
-                promptGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">موردی یافت نشد.</p>`;
+                promptGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 40px;">موردی یافت نشد.</p>`;
                 return;
             }
 
@@ -273,11 +286,11 @@
                 card.innerHTML = `
                     <div class="card-img-wrapper">
                         <img src="${item.image || 'https://via.placeholder.com/300x180?text=AI+Prompt'}" class="card-img">
-                        <button class="quick-copy-btn" onclick="navigator.clipboard.writeText('${item.prompt.replace(/'/g, "\\'")}'); alert('کپی شد!');">📋 کپی</button>
+                        <button class="quick-copy-btn" onclick="navigator.clipboard.writeText('${item.prompt ? item.prompt.replace(/'/g, "\\'") : ''}'); alert('کپی شد!');">📋 کپی</button>
                         <span class="category-badge">${item.category || 'General'}</span>
                     </div>
-                    <div class="card-title">${item.title}</div>
-                    <div class="card-desc">${item.prompt}</div>
+                    <div class="card-title">${item.title || ''}</div>
+                    <div class="card-desc">${item.prompt || ''}</div>
                     <div class="card-footer">${footerActions}</div>
                 `;
                 promptGrid.appendChild(card);
@@ -287,7 +300,7 @@
         async function approvePrompt(id) {
             const { error } = await supabaseClient.from('prompts').update({ is_approved: true }).eq('id', id);
             if (error) alert(error.message);
-            else { alert('پرامپت تایید شد.'); fetchPrompts(); }
+            else { alert('پرامپت تایید و منتشر شد.'); fetchPrompts(); }
         }
 
         async function deletePrompt(id) {
@@ -297,6 +310,8 @@
                 else { alert('حذف شد.'); fetchPrompts(); }
             }
         }
+
+        document.getElementById('searchInput').oninput = () => renderPrompts();
 
         document.getElementById('openUploadBtn').onclick = () => {
             if (!currentUser) {
