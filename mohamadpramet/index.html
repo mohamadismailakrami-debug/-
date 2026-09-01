@@ -3,468 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Prompt Hub</title>
+    <title>کتابخانه پرامپت | محمد اسماعیل اکرمی</title>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         :root {
-            --bg-main: #f3f4f6;
-            --card-bg: #ffffff;
-            --primary-orange: #f97316;
-            --primary-orange-hover: #ea580c;
-            --primary-orange-light: #fff7ed;
-            --text-dark: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --sidebar-width: 240px;
+            --primary: #ea580c;
+            --primary-hover: #c2410c;
+            --primary-light: #fff7ed;
+            --primary-border: #fdba74;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif; }
+        
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-dark); 
+            display: flex; 
+            min-height: 100vh; 
+            direction: rtl;
+            position: relative;
+            overflow-x: hidden;
         }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Styles */
-        aside {
-            width: var(--sidebar-width);
-            background: #ffffff;
-            border-left: 1px solid var(--border-color);
-            padding: 24px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+        
+        /* Sidebar (Moved to Left Side) */
+        aside { 
+            width: 280px; 
+            background: #ffffff; 
+            padding: 1.5rem; 
+            display: flex; 
+            flex-direction: column; 
+            border-right: 1px solid var(--border-color); 
             flex-shrink: 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 90;
+            transition: transform 0.3s ease;
         }
 
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            padding: 0 12px;
+        aside.collapsed {
+            transform: translateX(-100%);
         }
 
-        .nav-list {
-            list-style: none;
+        .sidebar-header {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
         }
 
+        .toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover { background: var(--bg-main); color: var(--primary); }
+        .toggle-btn svg { width: 22px; height: 22px; fill: currentColor; }
+        
+        .logo { 
+            font-size: 1rem; 
+            font-weight: 800; 
+            color: var(--text-dark); 
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .user-profile-summary {
+            background: var(--bg-main);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        .user-email-text { font-size: 0.8rem; color: var(--text-muted); word-break: break-all; margin-top: 0.2rem; }
+        
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            border-radius: 8px;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
             color: var(--text-muted);
             text-decoration: none;
+            font-weight: 600;
             font-size: 0.95rem;
-            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
+        .nav-item:hover { background: var(--bg-main); color: var(--primary); }
+        .nav-item.active { background: var(--primary-light); color: var(--primary); }
+        .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
 
-        .nav-item:hover {
-            background: #f9fafb;
-            color: var(--text-dark);
-        }
-
-        .nav-item.active {
-            background: var(--primary-orange-light);
-            color: var(--primary-orange);
-        }
-
-        /* Main Area */
-        main {
-            flex-grow: 1;
-            padding: 32px 40px;
-            overflow-y: auto;
-        }
-
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 32px;
-        }
-
-        .header-titles h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .header-titles p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .search-box {
-            position: relative;
-            width: 300px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: #ffffff;
-            outline: none;
-            font-size: 0.9rem;
-        }
-
-        .btn-orange {
-            background: var(--primary-orange);
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
+        .auth-btn {background: var(--primary); 
+            color: #fff; 
+            border: none; 
+            padding: 0.8rem 1rem; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            width: 100%; 
             transition: background 0.2s;
             display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-orange:hover {
-            background: var(--primary-orange-hover);
-        }
-
-        .section-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        /* Prompt Grid */
-        .prompt-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 20px;
-        }
-
-        .prompt-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-        }
-
-        .prompt-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            border-color: var(--primary-orange);
-        }
-
-        .card-img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            background: #e5e7eb;
-        }
-
-        .card-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 6px;
-            color: var(--text-dark);
-        }
-
-        .card-desc {
-            color: var(--text-muted);
-            font-size: 0.825rem;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        /* Detail Modal (Floating Card Style like Screenshot) */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.3);
-            display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+        .auth-btn.logout { background: #ef4444; }
+        .auth-btn:hover { opacity: 0.95; }
+        
+        /* Main Area Adjustments */
+        main { 
+            flex: 1; 
+            padding: 2.5rem 3rem; 
+            width: 100%; 
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
         }
 
-        .modal-card {
+        body.menu-collapsed main {
+            margin-left: 0;
+        }
+
+        .menu-open-trigger {
+            position: fixed;
+            left: 1rem;
+            top: 1rem;
+            z-index: 80;
             background: #ffffff;
-            width: 420px;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: none;
+        }
+
+        body.menu-collapsed .menu-open-trigger {
             display: flex;
-            flex-direction: column;
-            gap: 16px;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header-title h1 { font-size: 1.75rem; font-weight: 800; color: var(--text-dark); margin-bottom: 0.25rem; }
+        .header-title p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .top-actions { display: flex; gap: 1rem; align-items: center; }
+        
+        .search-box { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-dark); 
+            padding: 0.7rem 1.2rem; 
+            border-radius: 10px; 
+            outline: none; 
+            transition: border-color 0.2s;
+            width: 280px;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .search-box:focus { border-color: var(--primary); }
+
+        .upload-btn { 
+            background: var(--primary); 
+            color: #fff; 
+            border: none; 
+            padding: 0.7rem 1.4rem; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            display: none; 
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+            transition: background 0.2s;
+        }
+        .upload-btn.visible { display: inline-flex; }
+        .upload-btn:hover { background: var(--primary-hover); }
+
+        .section-title { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin-bottom: 1.25rem; }
+
+        /* Cards Grid */
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+        
+        .card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 14px; 
+            overflow: hidden; 
+            cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .card:hover { transform: translateY(-4px); border-color: var(--primary-border); box-shadow: 0 12px 20px rgba(0,0,0,0.05); }
+        .card.selected { border: 2px solid var(--primary); background: var(--primary-light); }
+        .card img { width: 100%; height: 160px; object-fit: cover; background: #f1f5f9; }
+        .card-content { padding: 1rem; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }.card-tag { font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; }
+        .fav-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #cbd5e1; transition: color 0.2s; }
+        .fav-btn.active { color: #ef4444; }
+        .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-prompt { color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Modal UI */
+        .modal { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(15, 23, 42, 0.5); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+            backdrop-filter: blur(4px); 
+            padding: 1.5rem;
+        }
+        .modal-content { 
+            background: #ffffff; 
+            border-radius: 20px; 
+            padding: 1.75rem; 
+            width: 100%; 
+            max-width: 460px; 
+            position: relative; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
             max-height: 90vh;
             overflow-y: auto;
         }
 
-        .modal-img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 12px;
-        }
+        .modal-img-preview { width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 1.25rem; }
 
-        .modal-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .modal-field label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .modal-field input, .modal-field textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; color: var(--text-dark); font-weight: 700; font-size: 0.85rem; }
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; 
+            background: #f8fafc; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-dark); 
+            padding: 0.75rem 1rem; 
+            border-radius: 10px; 
             font-size: 0.9rem;
-            outline: none;
         }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
 
-        .modal-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border-color);
+        .features-box {
+            background: var(--primary-light);
+            border: 1px dashed var(--primary-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.25rem;
         }
-
-        .info-item {
+        .features-box h4 {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .features-list {
+            list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 0.4rem;
+        }
+        .features-list li {
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
-        .info-item .lbl { font-size: 0.75rem; color: var(--text-muted); }
-        .info-item .val { font-size: 0.85rem; font-weight: 600; }
+        .metadata-row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted); }
+        .metadata-item span { display: block; font-weight: 700; color: var(--text-dark); margin-top: 0.2rem; }
 
-        .btn-danger-text {
-            background: none;
-            border: none;
-            color: #ef4444;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: 600;
-            padding: 8px;
+        .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+        .btn-submit { background: var(--primary); color: #fff; border: none; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; transition: background 0.2s; }
+        .btn-submit:hover { background: var(--primary-hover); }
+        .btn-delete { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-delete:hover { background: #fef2f2; }.close-btn { position: absolute; left: 1rem; top: 1rem; color: var(--text-muted); cursor: pointer; background: #f1f5f9; border: none; font-size: 1.2rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        @media (max-width: 768px) {
+            main { padding: 1.5rem; margin-left: 0 !important; }
+            aside { transform: translateX(-100%); }
+            aside.mobile-open { transform: translateX(0); }
+            .menu-open-trigger { display: flex !important; }
         }
     </style>
 </head>
 <body>
+    <!-- Floating toggle button when menu is closed -->
+    <button class="toggle-btn menu-open-trigger" onclick="toggleSidebar()" title="باز کردن منو">
+        <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </button>
 
-    <!-- Sidebar Navigation -->
-    <aside>
-        <div class="logo">AI Prompt Hub</div>
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg style="width:24px;height:24px;fill:var(--primary)" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                کتابخانه پرامپت | محمد اسماعیل اکرمی
+            </div>
+            <button class="toggle-btn" onclick="toggleSidebar()" title="بستن منو">
+                <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
+        </div>
+
+        <div class="user-profile-summary">
+            <div style="font-size:0.75rem; font-weight:700; color:var(--primary);">وضعیت کاربر:</div>
+            <div class="user-email-text" id="userInfo">مهمان (وارد نشده)</div>
+        </div>
+
         <ul class="nav-list">
-            <li class="nav-item active">🏠 خانه</li>
-            <li class="nav-item">📊 داشبورد</li>
-            <li class="nav-item">🖼 مجموعه‌ها</li>
-            <li class="nav-item" id="userMenuBtn">👤 حساب کاربری</li>
+            <li class="nav-item active" onclick="setCategory('همه', this)">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> خانه
+            </li>
+            <li class="nav-item" onclick="setCategory('تصویر', this)">
+                <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg> تصویر
+            </li>
+            <li class="nav-item" onclick="setCategory('علاقه‌مندی‌ها', this)">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> مجموعه‌های من
+            </li>
+            <li class="nav-item" onclick="alert('تنظیمات حساب کاربری')">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> حساب کاربری
+            </li>
         </ul>
+
+        <button class="auth-btn" id="authBtn" onclick="handleAuthClick()">ورود / ثبت‌نام</button>
     </aside>
 
-    <!-- Main Content Area -->
     <main>
-        <div class="top-header">
-            <div class="header-titles">
-                <h1 id="welcomeTitle">روز بخیر!</h1>
-                <p>کتابخانه پرامپت‌های شما</p>
+        <div class="top-bar">
+            <div class="header-title">
+                <h1 id="welcomeText">سلام، خوش آمدید!</h1>
+                <p>مجموعه تخصصی پرامپت‌های هوش مصنوعی</p>
             </div>
             <div class="top-actions">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="جستجو...">
-                </div>
-                <button class="btn-orange" id="openUploadBtn">+ پرامپت جدید</button>
+                <input type="text" class="search-box" id="searchInput" placeholder="سرچ کنید..." oninput="renderPrompts()">
+                <button class="upload-btn" id="uploadBtn" onclick="openModal('uploadModal')">+ افزودن جدید</button>
             </div>
         </div>
 
         <div class="section-title">پرامپت‌های اخیر شما</div>
-        <div class="prompt-grid" id="promptGrid">
-            <!-- کارت‌ها به صورت پویا بارگذاری می‌شوند -->
-        </div>
+        <div class="gallery" id="gallery"></div>
     </main>
 
-    <!-- Prompt Detail Modal -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal-card">
-            <img src="" id="detailImg" class="modal-img" alt="Preview">
+    <!-- Auth Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('loginModal')">✕</button>
+            <h3 style="margin-bottom:0.5rem; font-size:1.1rem; color: var(--text-dark);">ورود یا ثبت‌نام در سایت</h3><p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem;">لطفاً برای دسترسی کامل ایمیل خود را وارد کنید.</p>
             
-            <div class="modal-field">
-                <label>عنوان</label>
-                <input type="text" id="detailTitle">
+            <div id="stepEmail">
+                <div class="form-group">
+                    <label>ایمیل شما</label>
+                    <input type="email" id="userEmailInput" placeholder="example@gmail.com" style="direction: ltr; text-align: left;">
+                </div>
+                <button type="button" class="btn-submit" onclick="sendOTPEmail()">ارسال کد تایید</button>
             </div>
 
-            <div class="modal-field">
-                <label>متن پرامپت</label>
-                <textarea id="detailPrompt" rows="4"></textarea>
+            <div id="stepOTP" style="display: none;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">کد تایید ۴ رقمی ارسال شده را وارد کنید:</p>
+                <div class="form-group">
+                    <label>کد تایید</label>
+                    <input type="text" id="otpCodeInput" placeholder="1234" maxlength="4" style="direction: ltr; text-align: center; font-size: 1.2rem; letter-spacing: 0.5rem;">
+                </div>
+                <button type="button" class="btn-submit" onclick="verifyOTP()">تایید و ورود به حساب</button>
             </div>
 
-            <button class="btn-orange" id="copyBtn">کپی پرامپت</button>
-
-            <div class="modal-info-grid">
-                <div class="info-item">
-                    <span class="lbl">فرمت</span>
-                    <span class="val" id="detailFormat">PNG</span>
-                </div>
-                <div class="info-item">
-                    <span class="lbl">دسته‌بندی</span>
-                    <span class="val" id="detailCategory">عمومی</span>
-                </div>
-                <div class="info-item">
-                    <span class="lbl">نوع</span>
-                    <span class="val">تصویر</span>
-                </div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                <button class="btn-danger-text" id="closeDetailBtn">بستن</button>
+            <div class="features-box">
+                <h4>✨ چرا باید عضو شوید؟</h4>
+                <ul class="features-list">
+                    <li>🚀 <b>ذخیره‌سازی شخصی:</b> پرامپت‌های دلخواهتان را نشان‌گذاری کرده و همه‌جا همراه داشته باشید.</li>
+                    <li>⚡ <b>کپی سریع:</b> دسترسی فوری به بهترین دستورات هوش مصنوعی میدجرنی و چت‌جی‌پی‌تی.</li>
+                    <li>💎 <b>تجربه شخصی‌سازی‌شده:</b> مدیریت کلکسیون‌ها و دسترسی به قابلیت‌های ویژه.</li>
+                </ul>
             </div>
         </div>
     </div>
 
     <!-- Upload Modal -->
-    <div class="modal-overlay" id="uploadModal">
-        <div class="modal-card">
-            <h3>ثبت پرامپت جدید</h3>
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('uploadModal')">✕</button>
+            <h3 style="margin-bottom:1rem; font-size:1.1rem;">افزودن پرامپت جدید</h3>
+            <form onsubmit="savePrompt(event)">
+                <div class="form-group">
+                    <label>عنوان پرامپت</label>
+                    <input type="text" id="titleInput" required placeholder="مثلاً: شهر سایبرپانک...">
+                </div>
+                <div class="form-group">
+                    <label>دسته‌بندی</label>
+                    <select id="categoryInput">
+                        <option value="تصویر">تصویر</option>
+                        <option value="متن">متن</option>
+                        <option value="ویدیو">ویدیو</option>
+                        <option value="کدنویسی">کدنویسی</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>متن پرامپت</label>
+                    <textarea id="promptInput" rows="4" required placeholder="A wide, cinematic shot..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>تصویر پیش‌نمایش</label>
+                    <input type="file" id="imageInput" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn-submit" id="saveBtn">ذخیره پرامپت</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('detailModal')">✕</button>
+            <img id="detailImg" class="modal-img-preview" src="" alt="Preview">
             
-            <div class="modal-field">
+            <div class="form-group">
                 <label>عنوان</label>
-                <input type="text" id="newTitle" placeholder="مثلاً: Neon Dreamscape">
+                <input type="text" id="detailTitleInput">
             </div>
 
-            <div class="modal-field">
-                <label>دسته‌بندی</label>
-                <input type="text" id="newCategory" placeholder="مثلاً: Cyberpunk">
-            </div>
-
-            <div class="modal-field">
+            <div class="form-group">
                 <label>متن پرامپت</label>
-                <textarea id="newPrompt" rows="3" placeholder="متن پرامپت را وارد کنید..."></textarea>
+                <textarea id="detailPromptInput" rows="4"></textarea>
+            </div><div class="modal-actions">
+                <button class="btn-submit" id="updateBtn" onclick="savePromptChanges()">ذخیره تغییرات</button>
+                <button class="btn-delete" id="deleteBtn" style="display:none;" onclick="deleteCurrentPrompt()">حذف پرامپت</button>
             </div>
 
-            <div class="modal-field">
-                <label>لینک تصویر پیش‌نمایش</label>
-                <input type="text" id="newImage" placeholder="https://...">
+            <div class="metadata-row">
+                <div class="metadata-item">فرمت<span>PNG</span></div>
+                <div class="metadata-item">تاریخ ثبت<span id="detailDate">۱۴۰۵/۰۶/۰۹</span></div>
+                <div class="metadata-item">نوع<span id="detailCategory">Midjourney</span></div>
             </div>
-
-            <button class="btn-orange" id="submitUploadBtn">ذخیره پرامپت</button>
-            <button class="btn-danger-text" id="closeUploadBtn">انصراف</button>
         </div>
     </div>
 
     <script>
-        // Supabase Client
-        const SUPABASE_URL = 'https://jquqnzjcmpypadififzj.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdXFuempjbXB5cGFkaWZpZnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxOTEyMDEsImV4cCI6MjEwMzc2NzIwMX0.9uiEUgJtoc98xbpUw6JgTRlfhRtFQE0ixZuz0Xx931s';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        const promptGrid = document.getElementById('promptGrid');
-        const detailModal = document.getElementById('detailModal');
-        const uploadModal = document.getElementById('uploadModal');
-
-        // Load Prompts
-        async function fetchPrompts() {
-            promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">در حال بارگذاری...</p>';
-            const { data, error } = await supabaseClient.from('prompts').select('*');
-
-            if (error || !data || data.length === 0) {
-                promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">هیچ پرامپتی یافت نشد.</p>';
-                return;
-            }
-
-            promptGrid.innerHTML = '';
-            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'prompt-card';
-                card.innerHTML = `
-                    <img src="${item.image || 'https://via.placeholder.com/300x180'}" class="card-img" alt="Card Preview">
-                    <div class="card-title">${item.title}</div>
-                    <div class="card-desc">${item.prompt}</div>
-                `;
-                card.onclick = () => openDetail(item);
-                promptGrid.appendChild(card);
-            });
-        }
-
-        function openDetail(item) {
-            document.getElementById('detailImg').src = item.image || 'https://via.placeholder.com/300x180';
-            document.getElementById('detailTitle').value = item.title;
-            document.getElementById('detailPrompt').value = item.prompt;
-            document.getElementById('detailCategory').innerText = item.category || 'عمومی';
-            
-            document.getElementById('copyBtn').onclick = () => {
-                navigator.clipboard.writeText(item.prompt);
-                alert('پرامپت کپی شد!');
-            };
-
-            detailModal.style.display = 'flex';
-        }
-
-        document.getElementById('closeDetailBtn').onclick = () => detailModal.style.display = 'none';
-
-        // Upload Modal Handlers
-        document.getElementById('openUploadBtn').onclick = () => uploadModal.style.display = 'flex';
-        document.getElementById('closeUploadBtn').onclick = () => uploadModal.style.display = 'none';
-
-        document.getElementById('submitUploadBtn').onclick = async () => {
-            const title = document.getElementById('newTitle').value.trim();
-            const category = document.getElementById('newCategory').value.trim();
-            const prompt = document.getElementById('newPrompt').value.trim();
-            const image = document.getElementById('newImage').value.trim();
-
-            if (!title || !prompt) {
-                alert('لطفاً عنوان و متن پرامپت را وارد کنید.');
-                return;
-            }
-
-            const { error } = await supabaseClient.from('prompts').insert([{
-                title, category, prompt, image, fileName: title, isVideo: false
-            }]);
-
-            if (error) {
-                alert('خطا در ثبت پرامپت: ' + error.message);
-            } else {
-                uploadModal.style.display = 'none';
-                fetchPrompts();
-            }
-        };
-
-        fetchPrompts();
-    </script>
-</body>
-</html>
+        // --- Supabase Config ---
+        const SUPABASE_URL = 'https://jquqnzjcmpypadlfilfz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6
