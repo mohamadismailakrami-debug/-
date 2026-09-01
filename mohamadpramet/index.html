@@ -130,6 +130,11 @@
             background: var(--primary-orange-hover);
         }
 
+        .btn-orange:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
         .section-title {
             font-size: 1.15rem;
             font-weight: 600;
@@ -313,7 +318,7 @@
             <h3>ثبت پرامپت جدید</h3>
             
             <div class="modal-field">
-                <label>عنوان</label>
+                <label>عنوان *</label>
                 <input type="text" id="newTitle" placeholder="مثلاً: Neon Dreamscape">
             </div>
 
@@ -323,12 +328,12 @@
             </div>
 
             <div class="modal-field">
-                <label>متن پرامپت</label>
+                <label>متن پرامپت *</label>
                 <textarea id="newPrompt" rows="3" placeholder="متن پرامپت را وارد کنید..."></textarea>
             </div>
 
             <div class="modal-field">
-                <label>انتخاب فایل تصویر</label>
+                <label>انتخاب تصویر (اختیاری)</label>
                 <input type="file" id="newImageFile" accept="image/*">
             </div>
 
@@ -346,6 +351,7 @@
         const detailModal = document.getElementById('detailModal');
         const uploadModal = document.getElementById('uploadModal');
         const authModal = document.getElementById('authModal');
+        const submitBtn = document.getElementById('submitUploadBtn');
         
         let currentUser = localStorage.getItem('user_email') || null;
 
@@ -385,9 +391,13 @@
         // Fetch Prompts
         async function fetchPrompts() {
             promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">در حال بارگذاری...</p>';
-            const { data, error } = await supabaseClient.from('prompts').select('*');
+            const { data, error } = await supabaseClient.from('prompts').select('*').order('created_at', { ascending: false });
 
-            if (error || !data || data.length === 0) {
+            if (error) {
+                console.error("Fetch error:", error);
+            }
+
+            if (!data || data.length === 0) {
                 promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">هیچ پرامپتی یافت نشد.</p>';
                 return;
             }
@@ -397,7 +407,7 @@
                 const card = document.createElement('div');
                 card.className = 'prompt-card';
                 card.innerHTML = `
-                    <img src="${item.image || 'https://via.placeholder.com/300x180'}" class="card-img" alt="Preview">
+                    <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
                     <div class="card-title">${item.title}</div>
                     <div class="card-desc">${item.prompt}</div>
                 `;
@@ -407,7 +417,7 @@
         }
 
         function openDetail(item) {
-            document.getElementById('detailImg').src = item.image || 'https://via.placeholder.com/300x180';
+            document.getElementById('detailImg').src = item.image || 'https://via.placeholder.com/300x180?text=No+Image';
             document.getElementById('detailTitle').value = item.title;
             document.getElementById('detailPrompt').value = item.prompt;
             
@@ -424,9 +434,9 @@
         document.getElementById('closeUploadBtn').onclick = () => uploadModal.style.display = 'none';
 
         // Upload Process
-        document.getElementById('submitUploadBtn').onclick = async () => {
+        submitBtn.onclick = async () => {
             const title = document.getElementById('newTitle').value.trim();
-            const category = document.getElementById('newCategory').value.trim();
+            const category = document.getElementById('newCategory').value.trim() || 'General';
             const prompt = document.getElementById('newPrompt').value.trim();
             const fileInput = document.getElementById('newImageFile');
             const file = fileInput.files[0];
@@ -436,40 +446,64 @@
                 return;
             }
 
+            // تغییر حالت دکمه به در حال آپلود
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'در حال ذخیره...';
+
             let imageUrl = '';
 
-            if (file) {
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}.${fileExt}`;
-                
-                const { error: uploadError } = await supabaseClient
-                    .storage
-                    .from('prompt-images')
-                    .upload(fileName, file);
+            try {
+                if (file) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                    
+                    const { data: uploadData, error: uploadError } = await supabaseClient
+                        .storage
+                        .from('prompt-images')
+                        .upload(fileName, file);
 
-                if (uploadError) {
-                    alert('خطا در آپلود تصویر: ' + uploadError.message);
-                    return;
+                    if (uploadError) {
+                        throw new Error('خطا در آپلود تصویر: ' + uploadError.message);
+                    }
+
+                    const { data: urlData } = supabaseClient
+                        .storage
+                        .from('prompt-images')
+                        .getPublicUrl(fileName);
+
+                    imageUrl = urlData.publicUrl;
                 }
 
-                const { data: urlData } = supabaseClient
-                    .storage
-                    .from('prompt-images')
-                    .getPublicUrl(fileName);
+                // ثبت در دیتابیس
+                const { error: dbError } = await supabaseClient.from('prompts').insert([{
+                    title: title,
+                    category: category,
+                    prompt: prompt,
+                    image: imageUrl,
+                    fileName: title,
+                    isVideo: false
+                }]);
 
-                imageUrl = urlData.publicUrl;
-            }
+                if (dbError) {
+                    throw new Error('خطا در ثبت جدول: ' + dbError.message);
+                }
 
-            const { error } = await supabaseClient.from('prompts').insert([{
-                title, category, prompt, image: imageUrl, fileName: title, isVideo: false
-            }]);
-
-            if (error) {
-                alert('خطا در ثبت پرامپت: ' + error.message);
-            } else {
-                alert('پرامپت با موفقیت ثبت شد!');
+                alert('پرامپت با موفقیت ذخیره شد!');
                 uploadModal.style.display = 'none';
+                
+                // پاک‌سازی فرم
+                document.getElementById('newTitle').value = '';
+                document.getElementById('newCategory').value = '';
+                document.getElementById('newPrompt').value = '';
+                fileInput.value = '';
+
                 fetchPrompts();
+
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'ذخیره و آپلود';
             }
         };
 
