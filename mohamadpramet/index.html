@@ -323,6 +323,7 @@
             margin-top: auto;
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         /* Modals */
@@ -389,6 +390,7 @@
             display: flex;
             gap: 10px;
             margin-top: 8px;
+            flex-wrap: wrap;
         }
 
         .modal-actions .btn {
@@ -419,7 +421,6 @@
             </div>
             <div class="top-actions">
                 <input type="text" id="searchInput" class="search-input" placeholder="جستجوی پرامپت...">
-                <!-- دکمه افزودن پرامپت همیشه برای همه نمایش داده می‌شود -->
                 <button class="btn btn-orange" id="openUploadBtn">+ پرامپت جدید</button>
             </div>
         </div>
@@ -452,7 +453,7 @@
         </div>
     </div>
 
-    <!-- Detail Modal -->
+    <!-- Detail & Edit Modal -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal-card">
             <img src="" id="detailImg" class="modal-img" alt="Preview">
@@ -470,6 +471,7 @@
             </div>
             <div class="modal-actions">
                 <button class="btn btn-orange" id="copyBtn">📋 کپی پرامپت</button>
+                <button class="btn btn-success" id="saveEditBtn" style="display: none;">✏️ ثبت تغییرات</button>
                 <button class="btn btn-danger" id="deleteBtn" style="display: none;">🗑 حذف</button>
             </div>
             <button class="btn btn-secondary" id="closeDetailBtn">بستن</button>
@@ -502,7 +504,7 @@
             </div>
 
             <div class="modal-actions">
-                <button class="btn btn-orange" id="submitUploadBtn">ارسال جهت تایید مدیر</button>
+                <button class="btn btn-orange" id="submitUploadBtn">ارسال پرامپت</button>
                 <button class="btn btn-secondary" id="closeUploadBtn">انصراف</button>
             </div>
         </div>
@@ -513,7 +515,6 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdXFuempjbXB5cGFkaWZpZnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxOTEyMDEsImV4cCI6MjEwMzc2NzIwMX0.9uiEUgJtoc98xbpUw6JgTRlfhRtFQE0ixZuz0Xx931s';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ایمیل مدیریت به ایمیل شما تنظیم شد
         const ADMIN_EMAIL = 'mohamadismailakrami@gmail.com';
 
         const promptGrid = document.getElementById('promptGrid');
@@ -538,7 +539,6 @@
         function updateAuthUI() {
             if (currentUser) {
                 document.getElementById('accountBtn').innerText = `👤 ${currentUser.split('@')[0]} (خروج)`;
-                
                 if (isAdmin()) {
                     navPendingBtn.style.display = 'flex';
                 } else {
@@ -642,13 +642,17 @@
                 const card = document.createElement('div');
                 card.className = 'prompt-card';
                 
-                let footerActions = `<button class="btn btn-secondary" style="width:100%; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده جزئیات</button>`;
+                let footerActions = `<button class="btn btn-secondary" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده ${isAdmin() ? '/ ویرایش' : 'جزئیات'}</button>`;
 
-                if (isAdmin() && currentTab === 'pending') {
-                    footerActions = `
-                        <button class="btn btn-success" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="approvePrompt('${item.id}')">✔️ تایید</button>
-                        <button class="btn btn-danger" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="deletePrompt('${item.id}')">❌ رد</button>
-                    `;
+                if (isAdmin()) {
+                    if (currentTab === 'pending') {
+                        footerActions = `
+                            <button class="btn btn-success" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="approvePrompt('${item.id}')">✔️ تایید</button>
+                            <button class="btn btn-danger" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="deletePrompt('${item.id}')">❌ رد</button>
+                        `;
+                    } else {
+                        footerActions += `<button class="btn btn-danger" style="font-size: 0.8rem; padding: 6px 12px;" onclick="deletePrompt('${item.id}')">🗑 حذف</button>`;
+                    }
                 }
 
                 card.innerHTML = `
@@ -677,21 +681,67 @@
             if (!item) return;
 
             document.getElementById('detailImg').src = item.image || 'https://via.placeholder.com/300x180?text=No+Image';
-            document.getElementById('detailTitle').value = item.title;
-            document.getElementById('detailCategory').value = item.category || 'General';
-            document.getElementById('detailPrompt').value = item.prompt;
             
-            document.getElementById('copyBtn').onclick = () => copyText(item.prompt);
+            const titleInput = document.getElementById('detailTitle');
+            const catInput = document.getElementById('detailCategory');
+            const promptInput = document.getElementById('detailPrompt');
+
+            titleInput.value = item.title;
+            catInput.value = item.category || 'General';
+            promptInput.value = item.prompt;
 
             const deleteBtn = document.getElementById('deleteBtn');
+            const saveEditBtn = document.getElementById('saveEditBtn');
+
             if (isAdmin()) {
+                titleInput.removeAttribute('readonly');
+                catInput.removeAttribute('readonly');
+                promptInput.removeAttribute('readonly');
+                
+                saveEditBtn.style.display = 'inline-flex';
                 deleteBtn.style.display = 'inline-flex';
+
                 deleteBtn.onclick = () => deletePrompt(item.id);
+                saveEditBtn.onclick = () => savePromptEdit(item.id);
             } else {
+                titleInput.setAttribute('readonly', 'true');
+                catInput.setAttribute('readonly', 'true');
+                promptInput.setAttribute('readonly', 'true');
+
+                saveEditBtn.style.display = 'none';
                 deleteBtn.style.display = 'none';
             }
 
+            document.getElementById('copyBtn').onclick = () => copyText(promptInput.value);
             detailModal.style.display = 'flex';
+        }
+
+        async function savePromptEdit(id) {
+            const updatedTitle = document.getElementById('detailTitle').value.trim();
+            const updatedCategory = document.getElementById('detailCategory').value.trim();
+            const updatedPrompt = document.getElementById('detailPrompt').value.trim();
+
+            if (!updatedTitle || !updatedPrompt) {
+                alert('عنوان و متن پرامپت نمی‌توانند خالی باشند.');
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('prompts')
+                .update({ 
+                    title: updatedTitle, 
+                    category: updatedCategory, 
+                    prompt: updatedPrompt 
+                })
+                .eq('id', id);
+
+            if (error) {
+                alert('خطا در ویرایش: ' + error.message);
+            } else {
+                alert('پرامپت با موفقیت ویرایش شد!');
+                detailModal.style.display = 'none';
+                fetchPrompts();
+            }
         }
 
         async function approvePrompt(id) {
@@ -735,6 +785,10 @@
                     filtered.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'prompt-card';
+                        let footerActions = `<button class="btn btn-secondary" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده ${isAdmin() ? '/ ویرایش' : 'جزئیات'}</button>`;
+                        if (isAdmin()) {
+                            footerActions += `<button class="btn btn-danger" style="font-size: 0.8rem; padding: 6px 12px;" onclick="deletePrompt('${item.id}')">🗑 حذف</button>`;
+                        }
                         card.innerHTML = `
                             <div class="card-img-wrapper">
                                 <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
@@ -743,9 +797,7 @@
                             </div>
                             <div class="card-title">${item.title}</div>
                             <div class="card-desc">${item.prompt}</div>
-                            <div class="card-footer">
-                                <button class="btn btn-secondary" style="width:100%; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده جزئیات</button>
-                            </div>
+                            <div class="card-footer">${footerActions}</div>
                         `;
                         promptGrid.appendChild(card);
                     });
@@ -755,7 +807,6 @@
 
         document.getElementById('closeDetailBtn').onclick = () => detailModal.style.display = 'none';
         
-        // کلیک روی دکمه + پرامپت جدید (بررسی ورود کاربر)
         openUploadBtn.onclick = () => {
             if (!currentUser) {
                 alert('لطفاً ابتدا وارد حساب کاربری شوید.');
@@ -828,7 +879,7 @@
                 if (autoApprove) {
                     alert('پرامپت با موفقیت منتشر شد!');
                 } else {
-                    alert('درخواست شما به مدیر ارسال شد و پس از تایید به لیست اضافه می‌شود.');
+                    alert('درخواست شما به مدیر ارسال شد و بعد از تایید مدیر پرامت شما منتشر خواهد شد.');
                 }
 
                 uploadModal.style.display = 'none';
@@ -844,7 +895,7 @@
                 alert(err.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'ارسال جهت تایید مدیر';
+                submitBtn.innerText = 'ارسال پرامپت';
             }
         };
 
