@@ -441,7 +441,7 @@
     <div class="modal-overlay" id="authModal">
         <div class="modal-card">
             <h3>ورود به حساب کاربری</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">لطفاً ایمیل خود را برای ورود وارد کنید.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">برای ثبت و پیشنهاد پرامپت لطفا ایمیل خود را وارد کنید.</p>
             <div class="modal-field">
                 <label>ایمیل</label>
                 <input type="email" id="authEmail" placeholder="ایمیل خود را وارد کنید...">
@@ -533,7 +533,7 @@
         let currentUser = localStorage.getItem('user_email') || null;
 
         function isAdmin() {
-            return currentUser && currentUser.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+            return currentUser && currentUser.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
         }
 
         function updateAuthUI() {
@@ -550,14 +550,16 @@
             }
         }
 
-        // Account Modal Handlers
+        // Account Modal
         document.getElementById('accountBtn').onclick = () => {
             if (currentUser) {
-                currentUser = null;
-                localStorage.removeItem('user_email');
-                currentTab = 'home';
-                updateAuthUI();
-                fetchPrompts();
+                if (confirm('آیا قصد خروج از حساب کاربری را دارید؟')) {
+                    currentUser = null;
+                    localStorage.removeItem('user_email');
+                    currentTab = 'home';
+                    updateAuthUI();
+                    fetchPrompts();
+                }
             } else {
                 authModal.style.display = 'flex';
             }
@@ -573,6 +575,8 @@
                 authModal.style.display = 'none';
                 updateAuthUI();
                 fetchPrompts();
+            } else {
+                alert('لطفاً ایمیل معتبر وارد کنید.');
             }
         };
 
@@ -807,9 +811,10 @@
 
         document.getElementById('closeDetailBtn').onclick = () => detailModal.style.display = 'none';
         
+        // Open Upload Modal Guard
         openUploadBtn.onclick = () => {
             if (!currentUser) {
-                alert('لطفاً ابتدا وارد حساب کاربری شوید.');
+                alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
                 authModal.style.display = 'flex';
                 return;
             }
@@ -818,10 +823,11 @@
         
         document.getElementById('closeUploadBtn').onclick = () => uploadModal.style.display = 'none';
 
-        // Upload Process
+        // Submit Upload Process
         submitBtn.onclick = async () => {
             if (!currentUser) {
-                alert('لطفاً ابتدا وارد حساب کاربری شوید.');
+                alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
+                uploadModal.style.display = 'none';
                 authModal.style.display = 'flex';
                 return;
             }
@@ -852,17 +858,18 @@
                         .from('prompt-images')
                         .upload(fileName, file);
 
-                    if (uploadError) throw new Error('خطا در آپلود تصویر: ' + uploadError.message);
+                    if (uploadError) console.warn('Warning image upload:', uploadError);
 
                     const { data: urlData } = supabaseClient
                         .storage
                         .from('prompt-images')
                         .getPublicUrl(fileName);
 
-                    imageUrl = urlData.publicUrl;
+                    if (urlData) imageUrl = urlData.publicUrl;
                 }
 
-                const autoApprove = isAdmin();
+                const userIsAdmin = isAdmin();
+                const approvalStatus = userIsAdmin ? true : false;
 
                 const { error: dbError } = await supabaseClient.from('prompts').insert([{
                     title: title,
@@ -871,12 +878,12 @@
                     image: imageUrl,
                     fileName: title,
                     isVideo: false,
-                    is_approved: autoApprove
+                    is_approved: approvalStatus
                 }]);
 
-                if (dbError) throw new Error('خطا در ثبت جدول: ' + dbError.message);
+                if (dbError) throw new Error('خطا در ثبت اطلاعات: ' + dbError.message);
 
-                if (autoApprove) {
+                if (userIsAdmin) {
                     alert('پرامپت با موفقیت منتشر شد!');
                 } else {
                     alert('درخواست شما به مدیر ارسال شد و بعد از تایید مدیر پرامت شما منتشر خواهد شد.');
