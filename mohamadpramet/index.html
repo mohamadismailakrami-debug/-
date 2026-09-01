@@ -8,15 +8,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-main: #f3f4f6;
+            --bg-main: #f8fafc;
             --card-bg: #ffffff;
             --primary-orange: #f97316;
             --primary-orange-hover: #ea580c;
             --primary-orange-light: #fff7ed;
-            --text-dark: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --sidebar-width: 240px;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --sidebar-width: 250px;
         }
 
         * {
@@ -50,21 +50,24 @@
             font-weight: 700;
             color: var(--text-dark);
             padding: 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .nav-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: 12px 14px;
+            border-radius: 10px;
             color: var(--text-muted);
             text-decoration: none;
             font-size: 0.95rem;
@@ -74,13 +77,23 @@
         }
 
         .nav-item:hover {
-            background: #f9fafb;
+            background: #f1f5f9;
             color: var(--text-dark);
         }
 
         .nav-item.active {
             background: var(--primary-orange-light);
             color: var(--primary-orange);
+            font-weight: 600;
+        }
+
+        .badge-count {
+            background: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-right: auto;
         }
 
         /* Main Area */
@@ -93,13 +106,13 @@
         .top-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 32px;
+            align-items: center;
+            margin-bottom: 24px;
         }
 
         .header-titles h1 {
             font-size: 1.75rem;
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 4px;
         }
 
@@ -111,82 +124,205 @@
         .top-actions {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+        }
+
+        .search-input {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            outline: none;
+            width: 240px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-orange);
+        }
+
+        /* Buttons Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
         }
 
         .btn-orange {
             background: var(--primary-orange);
             color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
         }
 
         .btn-orange:hover {
             background: var(--primary-orange-hover);
+            transform: translateY(-1px);
         }
 
         .btn-orange:disabled {
             background: #cbd5e1;
+            box-shadow: none;
             cursor: not-allowed;
         }
 
-        .section-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 20px;
+        .btn-success {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Filter Tags */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary-orange);
+            color: #ffffff;
+            border-color: var(--primary-orange);
         }
 
         /* Prompt Grid */
         .prompt-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 22px;
         }
 
         .prompt-card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border-color);
-            padding: 12px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            padding: 14px;
+            position: relative;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .prompt-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
             border-color: var(--primary-orange);
+        }
+
+        .card-img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            background: #f1f5f9;
         }
 
         .card-img {
             width: 100%;
-            height: 150px;
+            height: 100%;
             object-fit: cover;
+        }
+
+        .quick-copy-btn {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 6px 10px;
             border-radius: 8px;
-            margin-bottom: 12px;
-            background: #e5e7eb;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .quick-copy-btn:hover {
+            background: var(--primary-orange);
+            color: #ffffff;
+        }
+
+        .category-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #ffffff;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
         }
 
         .card-title {
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-weight: 700;
+            font-size: 1rem;
             margin-bottom: 6px;
             color: var(--text-dark);
         }
 
         .card-desc {
             color: var(--text-muted);
-            font-size: 0.825rem;
+            font-size: 0.85rem;
             line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
         }
 
         /* Modals */
@@ -196,7 +332,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0,0,0,0.3);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
             display: none;
             justify-content: center;
             align-items: center;
@@ -205,10 +342,10 @@
 
         .modal-card {
             background: #ffffff;
-            width: 420px;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            width: 440px;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.12);
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -230,28 +367,32 @@
         }
 
         .modal-field label {
-            font-size: 0.8rem;
+            font-size: 0.825rem;
             font-weight: 600;
             color: var(--text-muted);
         }
 
         .modal-field input, .modal-field textarea {
             width: 100%;
-            padding: 10px;
+            padding: 10px 14px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.9rem;
             outline: none;
         }
 
-        .btn-danger-text {
-            background: none;
-            border: none;
-            color: #ef4444;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: 600;
-            padding: 8px;
+        .modal-field input:focus, .modal-field textarea:focus {
+            border-color: var(--primary-orange);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
         }
     </style>
 </head>
@@ -259,9 +400,12 @@
 
     <!-- Sidebar Navigation -->
     <aside>
-        <div class="logo">AI Prompt Hub</div>
+        <div class="logo">⚡ AI Prompt Hub</div>
         <ul class="nav-list">
-            <li class="nav-item active">🏠 خانه</li>
+            <li class="nav-item active" id="navHomeBtn">🏠 خانه</li>
+            <li class="nav-item" id="navPendingBtn" style="display: none;">
+                ⏳ درخواست‌های معلق <span class="badge-count" id="pendingBadge">0</span>
+            </li>
             <li class="nav-item" id="accountBtn">👤 ورود / حساب</li>
         </ul>
     </aside>
@@ -270,15 +414,25 @@
     <main>
         <div class="top-header">
             <div class="header-titles">
-                <h1 id="userGreeting">روز بخیر!</h1>
-                <p>کتابخانه پرامپت‌های شما</p>
+                <h1 id="pageHeading">خانه</h1>
+                <p id="pageSubHeading">کتابخانه پرامپت‌های هوش مصنوعی</p>
             </div>
             <div class="top-actions">
-                <button class="btn-orange" id="openUploadBtn">+ پرامپت جدید</button>
+                <input type="text" id="searchInput" class="search-input" placeholder="جستجوی پرامپت...">
+                <!-- دکمه ثبت پرامپت همیشه برای همه نمایش داده می‌شود -->
+                <button class="btn btn-orange" id="openUploadBtn">+ پرامپت جدید</button>
             </div>
         </div>
 
-        <div class="section-title">پرامپت‌های اخیر شما</div>
+        <!-- Filter Categories Bar -->
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" data-cat="all">همه</button>
+            <button class="filter-btn" data-cat="Cyberpunk">Cyberpunk</button>
+            <button class="filter-btn" data-cat="Portrait">پرتره</button>
+            <button class="filter-btn" data-cat="3D">سه بعدی</button>
+            <button class="filter-btn" data-cat="General">عمومی</button>
+        </div>
+
         <div class="prompt-grid" id="promptGrid"></div>
     </main>
 
@@ -286,12 +440,15 @@
     <div class="modal-overlay" id="authModal">
         <div class="modal-card">
             <h3>ورود به حساب کاربری</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">برای ثبت پرامپت جدید، ابتدا ایمیل خود را وارد کنید.</p>
             <div class="modal-field">
                 <label>ایمیل</label>
                 <input type="email" id="authEmail" placeholder="ایمیل خود را وارد کنید...">
             </div>
-            <button class="btn-orange" id="submitAuthBtn">ورود</button>
-            <button class="btn-danger-text" id="closeAuthBtn">انصراف</button>
+            <div class="modal-actions">
+                <button class="btn btn-orange" id="submitAuthBtn">ورود</button>
+                <button class="btn btn-secondary" id="closeAuthBtn">انصراف</button>
+            </div>
         </div>
     </div>
 
@@ -304,11 +461,18 @@
                 <input type="text" id="detailTitle" readonly>
             </div>
             <div class="modal-field">
+                <label>دسته‌بندی</label>
+                <input type="text" id="detailCategory" readonly>
+            </div>
+            <div class="modal-field">
                 <label>متن پرامپت</label>
                 <textarea id="detailPrompt" rows="4" readonly></textarea>
             </div>
-            <button class="btn-orange" id="copyBtn">کپی پرامپت</button>
-            <button class="btn-danger-text" id="closeDetailBtn">بستن</button>
+            <div class="modal-actions">
+                <button class="btn btn-orange" id="copyBtn">📋 کپی پرامپت</button>
+                <button class="btn btn-danger" id="deleteBtn" style="display: none;">🗑 حذف</button>
+            </div>
+            <button class="btn btn-secondary" id="closeDetailBtn">بستن</button>
         </div>
     </div>
 
@@ -337,8 +501,10 @@
                 <input type="file" id="newImageFile" accept="image/*">
             </div>
 
-            <button class="btn-orange" id="submitUploadBtn">ذخیره و آپلود</button>
-            <button class="btn-danger-text" id="closeUploadBtn">انصراف</button>
+            <div class="modal-actions">
+                <button class="btn btn-orange" id="submitUploadBtn">ارسال جهت تایید مدیر</button>
+                <button class="btn btn-secondary" id="closeUploadBtn">انصراف</button>
+            </div>
         </div>
     </div>
 
@@ -347,21 +513,40 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdXFuempjbXB5cGFkaWZpZnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxOTEyMDEsImV4cCI6MjEwMzc2NzIwMX0.9uiEUgJtoc98xbpUw6JgTRlfhRtFQE0ixZuz0Xx931s';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // ایمیل مدیر تنظیم شد
+        const ADMIN_EMAIL = 'mohamadismailakrami@gmail.com';
+
         const promptGrid = document.getElementById('promptGrid');
         const detailModal = document.getElementById('detailModal');
         const uploadModal = document.getElementById('uploadModal');
         const authModal = document.getElementById('authModal');
         const submitBtn = document.getElementById('submitUploadBtn');
-        
+        const openUploadBtn = document.getElementById('openUploadBtn');
+        const searchInput = document.getElementById('searchInput');
+        const navPendingBtn = document.getElementById('navPendingBtn');
+        const navHomeBtn = document.getElementById('navHomeBtn');
+        const pendingBadge = document.getElementById('pendingBadge');
+
+        let allPrompts = [];
+        let currentTab = 'home';
         let currentUser = localStorage.getItem('user_email') || null;
+
+        function isAdmin() {
+            return currentUser && currentUser.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        }
 
         function updateAuthUI() {
             if (currentUser) {
-                document.getElementById('userGreeting').innerText = `خوش آمدید، ${currentUser.split('@')[0]}`;
-                document.getElementById('accountBtn').innerText = '👤 خروج از حساب';
+                document.getElementById('accountBtn').innerText = `👤 ${currentUser.split('@')[0]} (خروج)`;
+                
+                if (isAdmin()) {
+                    navPendingBtn.style.display = 'flex';
+                } else {
+                    navPendingBtn.style.display = 'none';
+                }
             } else {
-                document.getElementById('userGreeting').innerText = 'روز بخیر!';
                 document.getElementById('accountBtn').innerText = '👤 ورود / حساب';
+                navPendingBtn.style.display = 'none';
             }
         }
 
@@ -370,7 +555,9 @@
             if (currentUser) {
                 currentUser = null;
                 localStorage.removeItem('user_email');
+                currentTab = 'home';
                 updateAuthUI();
+                fetchPrompts();
             } else {
                 authModal.style.display = 'flex';
             }
@@ -385,7 +572,31 @@
                 localStorage.setItem('user_email', email);
                 authModal.style.display = 'none';
                 updateAuthUI();
+                fetchPrompts();
+                // اگر کاربر روی افزودن پرامپت زده بود، پس از ورود فرم را باز کن
+                uploadModal.style.display = 'flex';
             }
+        };
+
+        // Navigation Tabs
+        navHomeBtn.onclick = () => {
+            currentTab = 'home';
+            navHomeBtn.classList.add('active');
+            navPendingBtn.classList.remove('active');
+            document.getElementById('filterBar').style.display = 'flex';
+            document.getElementById('pageHeading').innerText = 'خانه';
+            document.getElementById('pageSubHeading').innerText = 'کتابخانه پرامپت‌های عمومی';
+            renderPrompts();
+        };
+
+        navPendingBtn.onclick = () => {
+            currentTab = 'pending';
+            navPendingBtn.classList.add('active');
+            navHomeBtn.classList.remove('active');
+            document.getElementById('filterBar').style.display = 'none';
+            document.getElementById('pageHeading').innerText = 'درخواست‌های معلق';
+            document.getElementById('pageSubHeading').innerText = 'پرامپت‌های در انتظار تایید مدیریت';
+            renderPrompts();
         };
 
         // Fetch Prompts
@@ -393,48 +604,179 @@
             promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">در حال بارگذاری...</p>';
             const { data, error } = await supabaseClient.from('prompts').select('*').order('created_at', { ascending: false });
 
-            if (error) {
-                console.error("Fetch error:", error);
+            if (error) console.error("Fetch error:", error);
+
+            allPrompts = data || [];
+            updatePendingBadge();
+            renderPrompts();
+        }
+
+        function updatePendingBadge() {
+            const pendingCount = allPrompts.filter(p => p.is_approved === false).length;
+            pendingBadge.innerText = pendingCount;
+        }
+
+        function renderPrompts() {
+            let items = [];
+            if (currentTab === 'home') {
+                items = allPrompts.filter(p => p.is_approved !== false);
+            } else {
+                items = allPrompts.filter(p => p.is_approved === false);
             }
 
-            if (!data || data.length === 0) {
-                promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted);">هیچ پرامپتی یافت نشد.</p>';
+            const query = searchInput.value.toLowerCase();
+            if (query) {
+                items = items.filter(p => 
+                    p.title.toLowerCase().includes(query) || 
+                    p.prompt.toLowerCase().includes(query)
+                );
+            }
+
+            if (!items || items.length === 0) {
+                promptGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 40px;">
+                    ${currentTab === 'home' ? 'هیچ پرامپت تایید شده‌ای یافت نشد.' : 'هیچ درخواستی در انتظار تایید نیست.'}
+                </p>`;
                 return;
             }
 
             promptGrid.innerHTML = '';
-            data.forEach(item => {
+            items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'prompt-card';
+                
+                let footerActions = `<button class="btn btn-secondary" style="width:100%; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده جزئیات</button>`;
+
+                if (isAdmin() && currentTab === 'pending') {
+                    footerActions = `
+                        <button class="btn btn-success" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="approvePrompt('${item.id}')">✔️ تایید</button>
+                        <button class="btn btn-danger" style="flex:1; font-size: 0.8rem; padding: 6px;" onclick="deletePrompt('${item.id}')">❌ رد</button>
+                    `;
+                }
+
                 card.innerHTML = `
-                    <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
+                    <div class="card-img-wrapper">
+                        <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
+                        <button class="quick-copy-btn" onclick="event.stopPropagation(); copyText('${item.prompt.replace(/'/g, "\\'")}')">📋 کپی</button>
+                        <span class="category-badge">${item.category || 'General'}</span>
+                    </div>
                     <div class="card-title">${item.title}</div>
                     <div class="card-desc">${item.prompt}</div>
+                    <div class="card-footer">
+                        ${footerActions}
+                    </div>
                 `;
-                card.onclick = () => openDetail(item);
                 promptGrid.appendChild(card);
             });
         }
 
-        function openDetail(item) {
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('متن پرامپت کپی شد!');
+        }
+
+        function openDetail(id) {
+            const item = allPrompts.find(p => p.id == id);
+            if (!item) return;
+
             document.getElementById('detailImg').src = item.image || 'https://via.placeholder.com/300x180?text=No+Image';
             document.getElementById('detailTitle').value = item.title;
+            document.getElementById('detailCategory').value = item.category || 'General';
             document.getElementById('detailPrompt').value = item.prompt;
             
-            document.getElementById('copyBtn').onclick = () => {
-                navigator.clipboard.writeText(item.prompt);
-                alert('پرامپت کپی شد!');
-            };
+            document.getElementById('copyBtn').onclick = () => copyText(item.prompt);
+
+            const deleteBtn = document.getElementById('deleteBtn');
+            if (isAdmin()) {
+                deleteBtn.style.display = 'inline-flex';
+                deleteBtn.onclick = () => deletePrompt(item.id);
+            } else {
+                deleteBtn.style.display = 'none';
+            }
 
             detailModal.style.display = 'flex';
         }
 
+        async function approvePrompt(id) {
+            const { error } = await supabaseClient.from('prompts').update({ is_approved: true }).eq('id', id);
+            if (error) {
+                alert('خطا در تایید: ' + error.message);
+            } else {
+                alert('پرامپت با موفقیت تایید و منتشر شد!');
+                fetchPrompts();
+            }
+        }
+
+        async function deletePrompt(id) {
+            if (confirm('آیا از حذف/رد این پرامپت اطمینان دارید؟')) {
+                const { error } = await supabaseClient.from('prompts').delete().eq('id', id);
+                if (error) {
+                    alert('خطا در حذف: ' + error.message);
+                } else {
+                    alert('پرامپت حذف شد.');
+                    detailModal.style.display = 'none';
+                    fetchPrompts();
+                }
+            }
+        }
+
+        // Search Filter
+        searchInput.oninput = () => renderPrompts();
+
+        // Category Filter Buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const cat = btn.getAttribute('data-cat');
+                if (cat === 'all') {
+                    renderPrompts();
+                } else {
+                    const filtered = allPrompts.filter(p => p.is_approved !== false && p.category && p.category.toLowerCase() === cat.toLowerCase());
+                    promptGrid.innerHTML = '';
+                    filtered.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'prompt-card';
+                        card.innerHTML = `
+                            <div class="card-img-wrapper">
+                                <img src="${item.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="card-img" alt="Preview">
+                                <button class="quick-copy-btn" onclick="copyText('${item.prompt.replace(/'/g, "\\'")}')">📋 کپی</button>
+                                <span class="category-badge">${item.category || 'General'}</span>
+                            </div>
+                            <div class="card-title">${item.title}</div>
+                            <div class="card-desc">${item.prompt}</div>
+                            <div class="card-footer">
+                                <button class="btn btn-secondary" style="width:100%; font-size: 0.8rem; padding: 6px;" onclick="openDetail('${item.id}')">مشاهده جزئیات</button>
+                            </div>
+                        `;
+                        promptGrid.appendChild(card);
+                    });
+                }
+            };
+        });
+
         document.getElementById('closeDetailBtn').onclick = () => detailModal.style.display = 'none';
-        document.getElementById('openUploadBtn').onclick = () => uploadModal.style.display = 'flex';
+        
+        // کلیک روی دکمه + پرامپت جدید
+        openUploadBtn.onclick = () => {
+            if (!currentUser) {
+                alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
+                authModal.style.display = 'flex';
+                return;
+            }
+            uploadModal.style.display = 'flex';
+        };
+        
         document.getElementById('closeUploadBtn').onclick = () => uploadModal.style.display = 'none';
 
         // Upload Process
         submitBtn.onclick = async () => {
+            if (!currentUser) {
+                alert('برای ذخیره باید لاگین باشید.');
+                authModal.style.display = 'flex';
+                return;
+            }
+
             const title = document.getElementById('newTitle').value.trim();
             const category = document.getElementById('newCategory').value.trim() || 'General';
             const prompt = document.getElementById('newPrompt').value.trim();
@@ -446,9 +788,8 @@
                 return;
             }
 
-            // تغییر حالت دکمه به در حال آپلود
             submitBtn.disabled = true;
-            submitBtn.innerText = 'در حال ذخیره...';
+            submitBtn.innerText = 'در حال ارسال...';
 
             let imageUrl = '';
 
@@ -457,14 +798,12 @@
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                     
-                    const { data: uploadData, error: uploadError } = await supabaseClient
+                    const { error: uploadError } = await supabaseClient
                         .storage
                         .from('prompt-images')
                         .upload(fileName, file);
 
-                    if (uploadError) {
-                        throw new Error('خطا در آپلود تصویر: ' + uploadError.message);
-                    }
+                    if (uploadError) throw new Error('خطا در آپلود تصویر: ' + uploadError.message);
 
                     const { data: urlData } = supabaseClient
                         .storage
@@ -474,24 +813,28 @@
                     imageUrl = urlData.publicUrl;
                 }
 
-                // ثبت در دیتابیس
+                const autoApprove = isAdmin();
+
                 const { error: dbError } = await supabaseClient.from('prompts').insert([{
                     title: title,
                     category: category,
                     prompt: prompt,
                     image: imageUrl,
                     fileName: title,
-                    isVideo: false
+                    isVideo: false,
+                    is_approved: autoApprove
                 }]);
 
-                if (dbError) {
-                    throw new Error('خطا در ثبت جدول: ' + dbError.message);
+                if (dbError) throw new Error('خطا در ثبت جدول: ' + dbError.message);
+
+                if (autoApprove) {
+                    alert('پرامپت با موفقیت منتشر شد!');
+                } else {
+                    alert('درخواست شما به مدیر ارسال شد و پس از تایید به لیست اضافه می‌شود.');
                 }
 
-                alert('پرامپت با موفقیت ذخیره شد!');
                 uploadModal.style.display = 'none';
                 
-                // پاک‌سازی فرم
                 document.getElementById('newTitle').value = '';
                 document.getElementById('newCategory').value = '';
                 document.getElementById('newPrompt').value = '';
@@ -503,7 +846,7 @@
                 alert(err.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'ذخیره و آپلود';
+                submitBtn.innerText = 'ارسال جهت تایید مدیر';
             }
         };
 
