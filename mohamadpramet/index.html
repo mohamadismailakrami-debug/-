@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --primary-orange: #f97316;
+            --primary-orange-hover: #ea580c;
+            --primary-orange-light: #fff7ed;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --sidebar-width: 250px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); display: flex; min-height: 100vh; }
+
+        aside {
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-left: 1px solid var(--border-color);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            flex-shrink: 0;
+        }
+
+        .logo { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); padding: 0 12px; }
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover { background: #f1f5f9; color: var(--text-dark); }
+        .nav-item.active { background: var(--primary-orange-light); color: var(--primary-orange); font-weight: 600; }
+
+        .badge-count {
+            background: #ef4444; color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; margin-right: auto;
+        }
+
+        main { flex-grow: 1; padding: 32px 40px; overflow-y: auto; }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header-titles h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
+        .header-titles p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .top-actions { display: flex; align-items: center; gap: 12px; }
+        .search-input { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color); outline: none; width: 240px; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s;
+        }
+
+        .btn-orange { background: var(--primary-orange); color: #ffffff; }
+        .btn-orange:hover { background: var(--primary-orange-hover); }
+        .btn-success { background: #10b981; color: #ffffff; }
+        .btn-secondary { background: #f1f5f9; color: var(--text-dark); border: 1px solid var(--border-color); }
+        .btn-danger { background: #ef4444; color: #ffffff; }
+
+        .prompt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
+        .prompt-card { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border-color); padding: 14px; display: flex; flex-direction: column; }
+
+        .card-img-wrapper { position: relative; width: 100%; height: 160px; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #f1f5f9; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .quick-copy-btn { position: absolute; top: 8px; left: 8px; background: rgba(255, 255, 255, 0.9); border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
+        .category-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(15, 23, 42, 0.75); color: #fff; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; }
+
+        .card-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+        .card-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; height: 38px; overflow: hidden; margin-bottom: 12px; }
+        .card-footer { margin-top: auto; display: flex; gap: 8px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: #ffffff; width: 440px; border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 16px; max-height: 90vh; overflow-y: auto; }
+        .modal-field { display: flex; flex-direction: column; gap: 6px; }
+        .modal-field label { font-size: 0.825rem; font-weight: 600; color: var(--text-muted); }
+        .modal-field input, .modal-field textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 10px; outline: none; }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo">⚡ AI Prompt Hub</div>
+        <ul class="nav-list">
+            <li class="nav-item active" id="navHomeBtn">🏠 خانه</li>
+            <li class="nav-item" id="navPendingBtn" style="display: none;">
+                ⏳ درخواست‌های معلق <span class="badge-count" id="pendingBadge">0</span>
+            </li>
+            <li class="nav-item" id="accountBtn">👤 ورود / حساب</li>
+        </ul>
+    </aside>
+
+    <main>
+        <div class="top-header">
+            <div class="header-titles">
+                <h1 id="pageHeading">خانه</h1>
+                <p id="pageSubHeading">کتابخانه پرامپت‌های هوش مصنوعی</p>
+            </div>
+            <div class="top-actions">
+                <input type="text" id="searchInput" class="search-input" placeholder="جستجوی پرامپت...">
+                <button class="btn btn-orange" id="openUploadBtn">+ پرامپت جدید</button>
+            </div>
+        </div>
+
+        <div class="prompt-grid" id="promptGrid"></div>
+    </main>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-card">
+            <h3>ورود به حساب کاربری</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">جهت ثبت پرامپت ایمیل خود را وارد کنید.</p>
+            <div class="modal-field">
+                <label>ایمیل</label>
+                <input type="email" id="authEmail" placeholder="مثال: user@gmail.com">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-orange" id="submitAuthBtn" style="flex:1;">ورود</button>
+                <button class="btn btn-secondary" id="closeAuthBtn" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-card">
+            <h3>ثبت پرامپت جدید</h3>
+            <div class="modal-field">
+                <label>عنوان *</label>
+                <input type="text" id="newTitle" placeholder="مثلاً: پرتره سایبرپانک">
+            </div>
+            <div class="modal-field">
+                <label>دسته‌بندی</label>
+                <input type="text" id="newCategory" placeholder="مثلاً: Cyberpunk">
+            </div>
+            <div class="modal-field">
+                <label>متن پرامپت *</label>
+                <textarea id="newPrompt" rows="3" placeholder="متن پرامپت را وارد کنید..."></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-orange" id="submitUploadBtn" style="flex:1;">ارسال پرامپت</button>
+                <button class="btn btn-secondary" id="closeUploadBtn" style="flex:1;">انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jquqnzjcmpypadififzj.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdXFuempjbXB5cGFkaWZpZnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxOTEyMDEsImV4cCI6MjEwMzc2NzIwMX0.9uiEUgJtoc98xbpUw6JgTRlfhRtFQE0ixZuz0Xx931s';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const ADMIN_EMAIL = 'mohamadismailakrami@gmail.com';
+
+        let allPrompts = [];
+        let currentTab = 'home';
+        let currentUser = localStorage.getItem('user_email') || null;
+
+        function isAdmin() {
+            return currentUser && currentUser.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+        }
+
+        function updateAuthUI() {
+            const navPendingBtn = document.getElementById('navPendingBtn');
+            if (currentUser) {
+                document.getElementById('accountBtn').innerText = `👤 ${currentUser.split('@')[0]} (خروج)`;
+                navPendingBtn.style.display = isAdmin() ? 'flex' : 'none';
+            } else {
+                document.getElementById('accountBtn').innerText = '👤 ورود / حساب';
+                navPendingBtn.style.display = 'none';
+            }
+        }
+
+        document.getElementById('accountBtn').onclick = () => {
+            if (currentUser) {
+                if (confirm('آیا می‌خواهید از حساب خارج شوید؟')) {
+                    currentUser = null;
+                    localStorage.removeItem('user_email');
+                    currentTab = 'home';
+                    updateAuthUI();
+                    fetchPrompts();
+                }
+            } else {
+                document.getElementById('authModal').style.display = 'flex';
+            }
+        };
+
+        document.getElementById('closeAuthBtn').onclick = () => document.getElementById('authModal').style.display = 'none';
+
+        document.getElementById('submitAuthBtn').onclick = () => {
+            const email = document.getElementById('authEmail').value.trim();
+            if (email) {
+                currentUser = email;
+                localStorage.setItem('user_email', email);
+                document.getElementById('authModal').style.display = 'none';
+                updateAuthUI();
+                fetchPrompts();
+            } else {
+                alert('لطفاً ایمیل معتبر وارد کنید.');
+            }
+        };
+
+        const navHomeBtn = document.getElementById('navHomeBtn');
+        const navPendingBtn = document.getElementById('navPendingBtn');
+
+        navHomeBtn.onclick = () => {
+            currentTab = 'home';
+            navHomeBtn.classList.add('active');
+            navPendingBtn.classList.remove('active');
+            document.getElementById('pageHeading').innerText = 'خانه';
+            renderPrompts();
+        };
+
+        navPendingBtn.onclick = () => {
+            currentTab = 'pending';
+            navPendingBtn.classList.add('active');
+            navHomeBtn.classList.remove('active');
+            document.getElementById('pageHeading').innerText = 'درخواست‌های معلق';
+            renderPrompts();
+        };
+
+        async function fetchPrompts() {
+            const promptGrid = document.getElementById('promptGrid');
+            promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">در حال بارگذاری...</p>';
+
+            const { data, error } = await supabaseClient.from('prompts').select('*').order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching prompts:", error);
+                promptGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: red;">خطا در دریافت اطلاعات</p>';
+                return;
+            }
+
+            allPrompts = data || [];
+            document.getElementById('pendingBadge').innerText = allPrompts.filter(p => p.is_approved === false).length;
+            renderPrompts();
+        }
+
+        function renderPrompts() {
+            const promptGrid = document.getElementById('promptGrid');
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            let items = currentTab === 'home' 
+                ? allPrompts.filter(p => p.is_approved !== false)
+                : allPrompts.filter(p => p.is_approved === false);
+
+            if (query) {
+                items = items.filter(p => p.title?.toLowerCase().includes(query) || p.prompt?.toLowerCase().includes(query));
+            }
+
+            if (!items.length) {
+                promptGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 40px;">موردی یافت نشد.</p>`;
+                return;
+            }
+
+            promptGrid.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'prompt-card';
+                
+                let footerActions = '';
+                if (isAdmin() && currentTab === 'pending') {
+                    footerActions = `
+                        <button class="btn btn-success" style="flex:1;" onclick="approvePrompt('${item.id}')">✔️ تایید</button>
+                        <button class="btn btn-danger" style="flex:1;" onclick="deletePrompt('${item.id}')">❌ رد</button>
+                    `;
+                } else if (isAdmin()) {
+                    footerActions = `<button class="btn btn-danger" style="flex:1;" onclick="deletePrompt('${item.id}')">🗑 حذف</button>`;
+                }
+
+                card.innerHTML = `
+                    <div class="card-img-wrapper">
+                        <img src="${item.image || 'https://via.placeholder.com/300x180?text=AI+Prompt'}" class="card-img">
+                        <button class="quick-copy-btn" onclick="navigator.clipboard.writeText('${item.prompt ? item.prompt.replace(/'/g, "\\'") : ''}'); alert('کپی شد!');">📋 کپی</button>
+                        <span class="category-badge">${item.category || 'General'}</span>
+                    </div>
+                    <div class="card-title">${item.title || ''}</div>
+                    <div class="card-desc">${item.prompt || ''}</div>
+                    <div class="card-footer">${footerActions}</div>
+                `;
+                promptGrid.appendChild(card);
+            });
+        }
+
+        async function approvePrompt(id) {
+            const { error } = await supabaseClient.from('prompts').update({ is_approved: true }).eq('id', id);
+            if (error) alert(error.message);
+            else { alert('پرامپت تایید و منتشر شد.'); fetchPrompts(); }
+        }
+
+        async function deletePrompt(id) {
+            if (confirm('از حذف این پرامپت اطمینان دارید؟')) {
+                const { error } = await supabaseClient.from('prompts').delete().eq('id', id);
+                if (error) alert(error.message);
+                else { alert('حذف شد.'); fetchPrompts(); }
+            }
+        }
+
+        document.getElementById('searchInput').oninput = () => renderPrompts();
+
+        document.getElementById('openUploadBtn').onclick = () => {
+            if (!currentUser) {
+                alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
+                document.getElementById('authModal').style.display = 'flex';
+                return;
+            }
+            document.getElementById('uploadModal').style.display = 'flex';
+        };
+
+        document.getElementById('closeUploadBtn').onclick = () => document.getElementById('uploadModal').style.display = 'none';
+
+        document.getElementById('submitUploadBtn').onclick = async () => {
+            const title = document.getElementById('newTitle').value.trim();
+            const category = document.getElementById('newCategory').value.trim() || 'General';
+            const prompt = document.getElementById('newPrompt').value.trim();
+
+            if (!title || !prompt) {
+                alert('لطفاً عنوان و متن پرامپت را تکمیل کنید.');
+                return;
+            }
+
+            const userIsAdmin = isAdmin();
+            const approvalStatus = userIsAdmin ? true : false;
+
+            const { error } = await supabaseClient.from('prompts').insert([{
+                title: title,
+                category: category,
+                prompt: prompt,
+                is_approved: approvalStatus
+            }]);
+
+            if (error) {
+                alert('خطا در ثبت: ' + error.message);
+            } else {
+                if (userIsAdmin) {
+                    alert('پرامپت با موفقیت منتشر شد!');
+                } else {
+                    alert('درخواست شما به مدیر ارسال شد و بعد از تایید مدیر پرامت شما منتشر خواهد شد.');
+                }
+                document.getElementById('uploadModal').style.display = 'none';
+                document.getElementById('newTitle').value = '';
+                document.getElementById('newPrompt').value = '';
+                fetchPrompts();
+            }
+        };
+
+        updateAuthUI();
+        fetchPrompts();
+    </script>
+</body>
+</html>
