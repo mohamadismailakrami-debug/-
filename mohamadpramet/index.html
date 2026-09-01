@@ -419,7 +419,7 @@
             </div>
             <div class="top-actions">
                 <input type="text" id="searchInput" class="search-input" placeholder="جستجوی پرامپت...">
-                <!-- دکمه ثبت پرامپت همیشه برای همه نمایش داده می‌شود -->
+                <!-- دکمه افزودن پرامپت همیشه برای همه نمایش داده می‌شود -->
                 <button class="btn btn-orange" id="openUploadBtn">+ پرامپت جدید</button>
             </div>
         </div>
@@ -440,7 +440,7 @@
     <div class="modal-overlay" id="authModal">
         <div class="modal-card">
             <h3>ورود به حساب کاربری</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">برای ثبت پرامپت جدید، ابتدا ایمیل خود را وارد کنید.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">لطفاً ایمیل خود را برای ورود وارد کنید.</p>
             <div class="modal-field">
                 <label>ایمیل</label>
                 <input type="email" id="authEmail" placeholder="ایمیل خود را وارد کنید...">
@@ -513,7 +513,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxdXFuempjbXB5cGFkaWZpZnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxOTEyMDEsImV4cCI6MjEwMzc2NzIwMX0.9uiEUgJtoc98xbpUw6JgTRlfhRtFQE0ixZuz0Xx931s';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ایمیل مدیر تنظیم شد
+        // ایمیل مدیریت به ایمیل شما تنظیم شد
         const ADMIN_EMAIL = 'mohamadismailakrami@gmail.com';
 
         const promptGrid = document.getElementById('promptGrid');
@@ -573,8 +573,6 @@
                 authModal.style.display = 'none';
                 updateAuthUI();
                 fetchPrompts();
-                // اگر کاربر روی افزودن پرامپت زده بود، پس از ورود فرم را باز کن
-                uploadModal.style.display = 'flex';
             }
         };
 
@@ -757,10 +755,10 @@
 
         document.getElementById('closeDetailBtn').onclick = () => detailModal.style.display = 'none';
         
-        // کلیک روی دکمه + پرامپت جدید
+        // کلیک روی دکمه + پرامپت جدید (بررسی ورود کاربر)
         openUploadBtn.onclick = () => {
             if (!currentUser) {
-                alert('برای ثبت پرامپت ابتدا باید وارد حساب کاربری شوید.');
+                alert('لطفاً ابتدا وارد حساب کاربری شوید.');
                 authModal.style.display = 'flex';
                 return;
             }
@@ -772,7 +770,7 @@
         // Upload Process
         submitBtn.onclick = async () => {
             if (!currentUser) {
-                alert('برای ذخیره باید لاگین باشید.');
+                alert('لطفاً ابتدا وارد حساب کاربری شوید.');
                 authModal.style.display = 'flex';
                 return;
             }
